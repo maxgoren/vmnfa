@@ -69,7 +69,10 @@ public class ByteCodeCompiler {
                 emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(tpos+1));
             } break;
             case '?': { 
+                int spos = skipEmit(0);
                 build(node.getLeft());
+                int L1 = skipEmit(0);
+                emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(L1+1));
             } break;
             default:
                 break;
@@ -81,10 +84,7 @@ public class ByteCodeCompiler {
                 handleOperators(node);
             } break;
             case LITERAL: {
-                Instruction newInst = new Instruction();
-                newInst.setOperand(node.getData());
-                newInst.setInst(InstType.CHAR);
-                emit(newInst);
+                emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()));
             } break;         
         }
     }
