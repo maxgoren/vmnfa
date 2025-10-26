@@ -1,0 +1,81 @@
+package com.maxgcoding.compile;
+
+import java.util.Stack;
+
+import com.maxgcoding.fa.NFA;
+import com.maxgcoding.fa.NFAState;
+import com.maxgcoding.fa.Transition;
+import com.maxgcoding.parse.Node;
+import com.maxgcoding.parse.NodeType;
+
+public class NFACompiler {
+    private Stack<NFA> st;
+    private int nextLabel;
+    private int makeLabel() {
+        return nextLabel++;
+    }
+    public NFACompiler() {
+        st = new Stack<>();
+    }
+
+    private NFA makeAtomic(String str) {
+        NFAState ns = new NFAState(makeLabel());
+        NFAState ts = new NFAState(makeLabel());
+        ns.addTransition(new Transition(str, ts));
+        return new NFA(ns,ts);
+    }
+
+    private NFA makeConcat(NFA lhs, NFA rhs) {
+        lhs.getAccept().addTransition(new Transition(rhs.getStart()));
+        lhs.setAccept(rhs.getAccept());
+        return lhs;
+    }
+    
+    private NFA makeAlternate(NFA lhs, NFA rhs) {
+        NFAState ns = new NFAState(makeLabel());
+        NFAState ts = new NFAState(makeLabel());
+        ns.addTransition(new Transition(lhs.getStart()));
+        ns.addTransition(new Transition(rhs.getStart()));
+        lhs.getAccept().addTransition(new Transition(ts));
+        rhs.getAccept().addTransition(new Transition(ts));
+        return new NFA(ns, ts);
+    }
+    private NFA makeKleene(NFA lhs) {
+        NFAState ns = new NFAState(makeLabel());
+        NFAState ts = new NFAState(makeLabel());
+        ns.addTransition(new Transition(ts));
+        ns.addTransition(new Transition(lhs.getStart()));
+        lhs.getAccept().addTransition(new Transition(lhs.getStart()));
+        lhs.getAccept().addTransition(new Transition(ts));
+        return new NFA(ns, ts);
+    }
+    private void compile(Node node) {
+        if (node == null)
+            return;
+        if (node.getType().equals(NodeType.LITERAL)) {
+            st.push(makeAtomic(node.getData()));
+        } else {
+            if (node.getData().equals("|")) {
+                compile(node.getLeft());
+                compile(node.getRight());
+                NFA rhs = st.pop();
+                NFA lhs = st.pop();
+                st.push(makeAlternate(lhs, rhs));
+            } else if (node.getData().equals("@")) {
+                compile(node.getLeft());
+                compile(node.getRight());
+                NFA rhs = st.pop();
+                NFA lhs = st.pop();
+                st.push(makeConcat(lhs, rhs));
+            } else if (node.getData().equals("*")) {
+                compile(node.getLeft());
+                NFA lhs = st.pop();
+                st.push(makeKleene(lhs));
+            }
+        }
+    }
+    public NFA build(Node node) {
+        compile(node);
+        return st.pop();
+    }
+}
