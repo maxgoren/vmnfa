@@ -1,8 +1,8 @@
 package com.maxgcoding.compile;
 
 import com.maxgcoding.parse.Node;
-import com.maxgcoding.vm.InstType;
-import com.maxgcoding.vm.Instruction;
+import com.maxgcoding.pm.vm.InstType;
+import com.maxgcoding.pm.vm.Instruction;
 
 public class ByteCodeCompiler {
     private Instruction[] code;
@@ -24,7 +24,7 @@ public class ByteCodeCompiler {
         ip += numplace;
         return ip;
     }
-    private void rewind(int oldpos) {
+    private void skipTo(int oldpos) {
         ip = oldpos;
     }
 
@@ -37,14 +37,14 @@ public class ByteCodeCompiler {
         skipEmit(1);
         build(node.getRight());
         int npos = skipEmit(0);
-        rewind(L2);
-        emit(new Instruction().setInst(InstType.JMP).setNextInst(npos));
-        rewind(npos);
+        skipTo(L2);
+        emit(new Instruction().setInst(InstType.JMP).setNext(npos));
+        skipTo(npos);
         int L3 = skipEmit(0);
-        rewind(spos);
-        Instruction ni = new Instruction().setInst(InstType.SPLIT).setNextInst(L1).setAltInst(L2+1);
+        skipTo(spos);
+        Instruction ni = new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(L2+1);
         emit(ni);
-        rewind(L3); 
+        skipTo(L3); 
     }
 
     private void handleKleeneOp(Node node) {
@@ -53,24 +53,24 @@ public class ByteCodeCompiler {
         int L1 = skipEmit(0);
         build(node.getLeft());
         int L2 = skipEmit(0);
-        rewind(spos);
-        emit(new Instruction().setInst(InstType.SPLIT).setNextInst(L1).setAltInst(L2+1));
-        rewind(L2);
-        emit(new Instruction().setInst(InstType.JMP).setNextInst(spos));
+        skipTo(spos);
+        emit(new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(L2+1));
+        skipTo(L2);
+        emit(new Instruction().setInst(InstType.JMP).setNext(spos));
     }
 
     private void handleZeroOrOnce(Node node) {
         int spos = skipEmit(0);
         build(node.getLeft());
         int L1 = skipEmit(0);
-        emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(L1+1));
+        emit(new Instruction().setInst(InstType.SPLIT).setNext(spos).setAlternate(L1+1));
     }
 
     private void handleAtLeastOnce(Node node) {
         int spos = skipEmit(0);
         build(node.getLeft());
         int L1 = skipEmit(0);
-        emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(L1+1));
+        emit(new Instruction().setInst(InstType.SPLIT).setNext(spos).setAlternate(L1+1));
     }
 
     private void handleLiteral(Node node) {

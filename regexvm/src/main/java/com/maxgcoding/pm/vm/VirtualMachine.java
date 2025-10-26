@@ -1,4 +1,4 @@
-package com.maxgcoding.vm;
+package com.maxgcoding.pm.vm;
 
 import com.maxgcoding.pm.PatternMatcher;
 
@@ -25,7 +25,7 @@ public class VirtualMachine implements PatternMatcher {
         if (inst.getInst().equals(InstType.CHAR))
             System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getOperand() + " ]");
         else
-            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNextInst() + " " + inst.getAltInst() + "]");
+            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + inst.getAlternate() + "]");
         return inst;
     }
     private boolean execute(int ipos, int spos) {
@@ -37,7 +37,7 @@ public class VirtualMachine implements PatternMatcher {
                 return false;
             }
             switch (inst.getInst()) {
-                case JMP: ipos = inst.getNextInst(); break;
+                case JMP: ipos = inst.getNext(); break;
                 case CHAR: {
                     if (!inst.getOperand().equals(toMatch.substring(spos, spos+1)))
                         return false;
@@ -45,9 +45,9 @@ public class VirtualMachine implements PatternMatcher {
                     spos++;
                 } break;
                 case SPLIT: {
-                    if (execute(inst.getNextInst(), spos))
+                    if (execute(inst.getNext(), spos))
                         return true;
-                    ipos = inst.getAltInst();
+                    ipos = inst.getAlternate();
                 } break; 
                 case MATCH:
                     return true;

@@ -1,4 +1,4 @@
-package com.maxgcoding.vm;
+package com.maxgcoding.pm.vm;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -8,6 +8,6 @@ import lombok.experimental.Accessors;
 public class Instruction {
     private InstType inst;
     private String operand;
-    private Integer nextInst;
-    private Integer altInst;
+    private Integer next;
+    private Integer alternate;
 }
