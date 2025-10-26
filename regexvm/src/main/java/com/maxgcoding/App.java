@@ -18,7 +18,7 @@ public final class App {
     public static void main(String[] args) {
         App app = new App();
         app.vmexample();
-        //app.psexample();
+        app.psexample();
     }
 
     private void psexample() {

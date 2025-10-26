@@ -6,7 +6,7 @@ import com.maxgcoding.vm.Instruction;
 
 public class ByteCodeCompiler {
     private Instruction[] code;
-    private int sp;
+    private int ip;
 
     public Instruction[] compile(Node node) {
         init();
@@ -18,61 +18,74 @@ public class ByteCodeCompiler {
         code = new Instruction[50];
     }
     private void emit(Instruction inst) {
-        code[sp++] = inst;
+        code[ip++] = inst;
     }
     private int skipEmit(int numplace) {
-        sp += numplace;
-        return sp;
+        ip += numplace;
+        return ip;
     }
     private void rewind(int oldpos) {
-        sp = oldpos;
+        ip = oldpos;
     }
+
+    private void handleOrOperator(Node node) {
+        int spos = skipEmit(0);
+        skipEmit(1);
+        int L1 = skipEmit(0);
+        build(node.getLeft());
+        int L2 = skipEmit(0);
+        skipEmit(1);
+        build(node.getRight());
+        int npos = skipEmit(0);
+        rewind(L2);
+        emit(new Instruction().setInst(InstType.JMP).setNextInst(npos));
+        rewind(npos);
+        int L3 = skipEmit(0);
+        rewind(spos);
+        Instruction ni = new Instruction().setInst(InstType.SPLIT).setNextInst(L1).setAltInst(L2+1);
+        emit(ni);
+        rewind(L3); 
+    }
+
+    private void handleKleeneOp(Node node) {
+        int spos = skipEmit(0);
+        skipEmit(1);
+        int L1 = skipEmit(0);
+        build(node.getLeft());
+        int L2 = skipEmit(0);
+        rewind(spos);
+        emit(new Instruction().setInst(InstType.SPLIT).setNextInst(L1).setAltInst(L2+1));
+        rewind(L2);
+        emit(new Instruction().setInst(InstType.JMP).setNextInst(spos));
+    }
+
+    private void handleZeroOrOnce(Node node) {
+        int spos = skipEmit(0);
+        build(node.getLeft());
+        int L1 = skipEmit(0);
+        emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(L1+1));
+    }
+
+    private void handleAtLeastOnce(Node node) {
+        int spos = skipEmit(0);
+        build(node.getLeft());
+        int L1 = skipEmit(0);
+        emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(L1+1));
+    }
+
+    private void handleLiteral(Node node) {
+        emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()));
+    }
+
     private void handleOperators(Node node) {
         switch (node.getData().charAt(0)) {
-            case '|': {
-                int spos = skipEmit(0);
-                skipEmit(1);
-                int L1 = skipEmit(0);
-                build(node.getLeft());
-                int cpos = skipEmit(0);
-                skipEmit(1);
-                build(node.getRight());
-                int npos = skipEmit(0);
-                rewind(cpos);
-                emit(new Instruction().setInst(InstType.JMP).setNextInst(npos));
-                rewind(npos);
-                int lpos = skipEmit(0);
-                rewind(spos);
-                Instruction ni = new Instruction().setInst(InstType.SPLIT).setNextInst(L1).setAltInst(cpos+1);
-                emit(ni);
-                rewind(lpos); 
-            } break;
+            case '|': handleOrOperator(node); break;
+            case '*': handleKleeneOp(node); break;
+            case '+': handleAtLeastOnce(node); break;
+            case '?': handleZeroOrOnce(node); break;
             case '@': { 
                 build(node.getLeft());
                 build(node.getRight());
-            } break;
-            case '*': { 
-                int spos = skipEmit(0);
-                skipEmit(1);
-                int L1 = skipEmit(0);
-                build(node.getLeft());
-                int L2 = skipEmit(0);
-                rewind(spos);
-                emit(new Instruction().setInst(InstType.SPLIT).setNextInst(L1).setAltInst(L2+1));
-                rewind(L2);
-                emit(new Instruction().setInst(InstType.JMP).setNextInst(spos));
-            } break;
-            case '+': { 
-                int spos = skipEmit(0);
-                build(node.getLeft());
-                int tpos = skipEmit(0);
-                emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(tpos+1));
-            } break;
-            case '?': { 
-                int spos = skipEmit(0);
-                build(node.getLeft());
-                int L1 = skipEmit(0);
-                emit(new Instruction().setInst(InstType.SPLIT).setNextInst(spos).setAltInst(L1+1));
             } break;
             default:
                 break;
@@ -84,7 +97,7 @@ public class ByteCodeCompiler {
                 handleOperators(node);
             } break;
             case LITERAL: {
-                emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()));
+                handleLiteral(node);
             } break;         
         }
     }

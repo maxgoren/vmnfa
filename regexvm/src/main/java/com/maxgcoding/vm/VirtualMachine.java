@@ -15,27 +15,45 @@ public class VirtualMachine implements PatternMatcher {
     @Override
     public boolean match(String text) {
         this.toMatch = text;
-        this.sp = 0;
-        return recursive(0, 0);
+        this.ip = 0;
+        return execute(0, 0);
     }
-
-    private boolean recursive(int ipos, int spos) {
-        System.out.println("Executing " + ipos + ": " + code[ipos]);
-        switch (code[ipos].getInst()) {
-            case CHAR:
-                if (!code[ipos].getOperand().equals(toMatch.substring(spos, spos+1)))
-                    return false;
-                return recursive(ipos+1, spos+1);
-            case JMP: return recursive(code[ipos].getNextInst(), spos);
-            case SPLIT:
-                if (recursive(code[ipos].getNextInst(), spos))
-                    return true;
-                return recursive(code[ipos].getAltInst(), spos);
-            case MATCH:
-                return true;
-            case HALT:
+    private Instruction fetch(int index) {
+        if (index > code.length || code[index] == null)
+            throw new RuntimeException("Illegal instruction");
+        Instruction inst = code[index];
+        if (inst.getInst().equals(InstType.CHAR))
+            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getOperand() + " ]");
+        else
+            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNextInst() + " " + inst.getAltInst() + "]");
+        return inst;
+    }
+    private boolean execute(int ipos, int spos) {
+        Instruction inst = null;
+        while (true) {
+            try {
+                inst = fetch(ipos);
+            } catch (Exception e) {
                 return false;
+            }
+            switch (inst.getInst()) {
+                case JMP: ipos = inst.getNextInst(); break;
+                case CHAR: {
+                    if (!inst.getOperand().equals(toMatch.substring(spos, spos+1)))
+                        return false;
+                    ipos++;
+                    spos++;
+                } break;
+                case SPLIT: {
+                    if (execute(inst.getNextInst(), spos))
+                        return true;
+                    ipos = inst.getAltInst();
+                } break; 
+                case MATCH:
+                    return true;
+                case HALT:
+                    return false;
+            }
         }
-        return false;
     }
 }
