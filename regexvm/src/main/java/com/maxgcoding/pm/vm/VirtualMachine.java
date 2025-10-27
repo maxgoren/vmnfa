@@ -29,7 +29,7 @@ public class VirtualMachine implements PatternMatcher {
         return inst;
     }
     private boolean execute(int ipos, int spos) {
-        Instruction inst = null;
+        Instruction inst;
         while (true) {
             try {
                 inst = fetch(ipos);
@@ -37,22 +37,21 @@ public class VirtualMachine implements PatternMatcher {
                 return false;
             }
             switch (inst.getInst()) {
-                case JMP: ipos = inst.getNext(); break;
-                case CHAR: {
-                    if (!inst.getOperand().equals(toMatch.substring(spos, spos+1)))
+                case JMP -> { ipos = inst.getNext(); }
+                case CHAR -> {
+                    if (!inst.getOperand().equals(toMatch.substring(spos, spos+1))) {
                         return false;
+                    }
                     ipos++;
                     spos++;
-                } break;
-                case SPLIT: {
+                }
+                case SPLIT -> {
                     if (execute(inst.getNext(), spos))
                         return true;
                     ipos = inst.getAlternate();
-                } break; 
-                case MATCH:
-                    return true;
-                case HALT:
-                    return false;
+                } 
+                case MATCH -> { return true; }
+                case HALT -> { return false; }
             }
         }
     }
