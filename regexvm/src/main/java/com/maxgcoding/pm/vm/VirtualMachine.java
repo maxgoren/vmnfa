@@ -1,22 +1,23 @@
 package com.maxgcoding.pm.vm;
 
+import java.util.Stack;
+
 import com.maxgcoding.pm.PatternMatcher;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 public class VirtualMachine implements PatternMatcher {
     private Instruction[] code;
-    private int ip;
     private String toMatch;
-    private int sp;
     public VirtualMachine(Instruction[] c) {
         this.code = c;
-        this.ip = 0;
     }
     
     @Override
     public boolean match(String text) {
         this.toMatch = text;
-        this.ip = 0;
-        return execute(0, 0);
+        return iterativeBT();
     }
     private Instruction fetch(int index) {
         if (index > code.length || code[index] == null)
@@ -28,12 +29,23 @@ public class VirtualMachine implements PatternMatcher {
             System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + inst.getAlternate() + "]");
         return inst;
     }
-    private boolean execute(int ipos, int spos) {
-        Instruction inst;
+    
+    @Data
+    @AllArgsConstructor
+    private class VMThread {
+        private Integer inst;
+        private Integer strPos;
+    };
+
+
+
+    private boolean runThread(Stack<VMThread> st, Integer ipos, Integer spos) {
         while (true) {
+            Instruction inst;
             try {
                 inst = fetch(ipos);
             } catch (Exception e) {
+                System.out.println("Out of threads.");
                 return false;
             }
             switch (inst.getInst()) {
@@ -46,13 +58,26 @@ public class VirtualMachine implements PatternMatcher {
                     spos++;
                 }
                 case SPLIT -> {
-                    if (execute(inst.getNext(), spos))
-                        return true;
-                    ipos = inst.getAlternate();
+                    st.push(new VMThread(inst.getAlternate(), spos));
+                    ipos = inst.getNext();
                 } 
                 case MATCH -> { return true; }
                 case HALT -> { return false; }
             }
         }
+    }
+
+
+    public boolean iterativeBT() {
+        Instruction inst;
+        Stack<VMThread> threads = new Stack<>();
+        threads.push(new VMThread(0, 0));
+        while (!threads.empty()) {
+            VMThread thread = threads.pop();
+            if (runThread(threads, thread.getInst(), thread.getStrPos())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
