@@ -7,9 +7,9 @@ public class VirtualMachine implements PatternMatcher {
     private int ip;
     private String toMatch;
     private int sp;
-    public VirtualMachine(Instruction[] c, int i) {
+    public VirtualMachine(Instruction[] c) {
         this.code = c;
-        this.ip = i;
+        this.ip = 0;
     }
     
     @Override

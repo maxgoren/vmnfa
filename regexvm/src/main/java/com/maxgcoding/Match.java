@@ -17,11 +17,11 @@ public class Match {
     private Match() {
     
     }
-    
+
     public static PatternMatcher patternMatcherFactory(String pattern, NFAType type) {
         Parser parser = new Parser();
         Node ast = parser.parse(pattern);
-        return type.equals(NFAType.DIGRAPH) ? new PowerSet(new NFACompiler().build(ast)):new VirtualMachine(new ByteCodeCompiler().compile(ast), 0);
+        return type.equals(NFAType.DIGRAPH) ? new PowerSet(new NFACompiler().build(ast)):new VirtualMachine(new ByteCodeCompiler().compile(ast));
     }
 
     public static boolean match(String text, String pattern, NFAType type) {
@@ -35,7 +35,7 @@ public class Match {
         ByteCodeCompiler c = new ByteCodeCompiler();
         Node ast = p.parse(pattern);
         Traversal.traverse(ast);
-        VirtualMachine vm = new VirtualMachine(c.compile(ast), 0);
+        VirtualMachine vm = new VirtualMachine(c.compile(ast));
         return vm.match(text);
     } 
 

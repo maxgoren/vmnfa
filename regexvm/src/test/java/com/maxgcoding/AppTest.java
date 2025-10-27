@@ -9,11 +9,11 @@ import com.maxgcoding.pm.NFAType;
 import com.maxgcoding.pm.PatternMatcher;
 
 /**
- * Unit test for simple App.
+ * Unit test for RegEx VM and Digraph NFA matchers
  */
 class AppTest {
     /**
-     * Rigorous Test.
+     * test VM
      */
     @Test
     void testVM() {
@@ -27,6 +27,9 @@ class AppTest {
         }
     }
 
+    /*
+     * test Linked Digraph NFA
+     */
     @Test
     void testPowerSet() {
         String pattern = "(a*b|a+c)d";
