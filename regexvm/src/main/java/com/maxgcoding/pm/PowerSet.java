@@ -56,7 +56,7 @@ public class PowerSet implements PatternMatcher {
         Set<NFAState> next = new HashSet<>();
         for (NFAState state : states) {
             for (Transition t : state.getTrans()) {
-                if (!t.getIsEpsilon() && t.getEdgeLabel().equals(String.valueOf(c)) && !next.contains(t.getDestination())) {
+                if (!t.getIsEpsilon() && t.getEdgeLabel().equals(c) && !next.contains(t.getDestination())) {
                     System.out.println(state.getLabel() + "-(" + t.getEdgeLabel() + ")-> " + t.getDestination().getLabel());
                     next.add(t.getDestination());
                 }

@@ -62,7 +62,7 @@ public class VirtualMachine implements PatternMatcher {
             switch (inst.getInst()) {
                 case JMP -> { ipos = inst.getNext(); }
                 case CHAR -> {
-                    if (!inst.getOperand().equals(toMatch.substring(spos, spos+1))) {
+                    if (!inst.getOperand().equals(toMatch.charAt(spos))) {
                         return false;
                     }
                     ipos++;

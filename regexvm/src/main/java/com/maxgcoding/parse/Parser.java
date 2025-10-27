@@ -48,14 +48,14 @@ public class Parser {
         } else if (Character.isAlphabetic(lookahead()) || Character.isDigit(lookahead()) || expect('.')) {
             lhs = new Node();
             lhs.setType(NodeType.LITERAL);
-            lhs.setData(String.valueOf(lookahead()));
+            lhs.setData(lookahead());
             System.out.println("Matched Literal: " + lookahead());
             advance();
         }
         if (expect('*') || expect('+') || expect('?')) {
             Node n = new Node();
             n.setType(NodeType.OPERATOR);
-            n.setData(String.valueOf(lookahead()));
+            n.setData(lookahead());
             match(lookahead());
             n.setLeft(lhs);
             lhs = n;
@@ -67,7 +67,7 @@ public class Parser {
         if (expect('(') || (Character.isDigit(lookahead()) || Character.isAlphabetic(lookahead()))) {
             Node t = new Node();
             t.setType(NodeType.OPERATOR);
-            t.setData(String.valueOf('@')); 
+            t.setData('@'); 
             t.setLeft(lhs);
             System.out.println("Making Concat");
             t.setRight(term());
@@ -81,7 +81,7 @@ public class Parser {
             match('|');
             Node t = new Node();
             t.setType(NodeType.OPERATOR);
-            t.setData(String.valueOf('|'));
+            t.setData('|');
             t.setLeft(lhs);
             t.setRight(expr());
             lhs = t;

@@ -26,7 +26,7 @@ public class NFACompiler {
         return st.pop();
     }
 
-    private NFA makeAtomic(String str) {
+    private NFA makeAtomic(Character str) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
         ns.addTransition(new Transition(str, ts));
@@ -72,7 +72,7 @@ public class NFACompiler {
             st.push(makeAtomic(node.getData()));
         } else {
             switch (node.getData()) {
-                case "|" -> {
+                case '|' -> {
                         compile(node.getLeft());
                         compile(node.getRight());
                         NFA rhs = st.pop();
@@ -80,7 +80,7 @@ public class NFACompiler {
                         st.push(makeAlternate(lhs, rhs));
                         break;
                     }
-                case "@" -> {
+                case '@' -> {
                         compile(node.getLeft());
                         compile(node.getRight());
                         NFA rhs = st.pop();
@@ -88,19 +88,19 @@ public class NFACompiler {
                         st.push(makeConcat(lhs, rhs));
                         break;
                     }
-                case "*" -> {
+                case '*' -> {
                         compile(node.getLeft());
                         NFA lhs = st.pop();
                         st.push(makeKleene(lhs, false));
                         break;
                     }
-                case "+" -> {
+                case '+' -> {
                         compile(node.getLeft());
                         NFA lhs = st.pop();
                         st.push(makeKleene(lhs, true));
                         break;
                     }
-                    case "?" -> {
+                case '?' -> {
                         compile(node.getLeft());
                         NFA lhs = st.pop();
                         st.push(makeAlternate(lhs, makeEpsilonAtomic()));

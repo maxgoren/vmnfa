@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class Node {
     private NodeType type;
-    private String data;
+    private Character data;
     private Node left;
     private Node right;
 }

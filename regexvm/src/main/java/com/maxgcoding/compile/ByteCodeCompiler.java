@@ -23,7 +23,7 @@ public class ByteCodeCompiler {
     }
 
     private void handleOperators(Node node) {
-        switch (node.getData().charAt(0)) {
+        switch (node.getData()) {
             case '|' -> handleOrOperator(node);
             case '*' -> handleKleeneOp(node);
             case '+' -> handleAtLeastOnce(node);

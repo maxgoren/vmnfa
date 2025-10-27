@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class Instruction {
     private InstType inst;
-    private String operand;
+    private Character operand;
     private Integer next;
     private Integer alternate;
 }
