@@ -5,9 +5,11 @@ import com.maxgcoding.pm.vm.InstType;
 import com.maxgcoding.pm.vm.Instruction;
 
 public class ByteCodeCompiler {
+
     private Instruction[] code;
     private int ip;
-
+    private int MAX_CODE;
+    
     public Instruction[] compile(Node node) {
         init();
         build(node);
@@ -15,15 +17,42 @@ public class ByteCodeCompiler {
         return code;
     }
     private void init() {
-        code = new Instruction[50];
+        MAX_CODE = 5;
+        code = new Instruction[MAX_CODE];
+        ip = 0;
     }
+
+    private void handleOperators(Node node) {
+        switch (node.getData().charAt(0)) {
+            case '|' -> handleOrOperator(node);
+            case '*' -> handleKleeneOp(node);
+            case '+' -> handleAtLeastOnce(node);
+            case '?' -> handleZeroOrOnce(node);
+            case '@' -> { 
+                build(node.getLeft());
+                build(node.getRight());
+            }
+            default -> { }
+        }
+    }
+    private void build(Node node) {
+        switch (node.getType()) {
+            case OPERATOR -> handleOperators(node);
+            case LITERAL ->  handleLiteral(node);
+        }
+    }
+
     private void emit(Instruction inst) {
+        if (ip+1 == MAX_CODE)
+            grow(2*MAX_CODE);
         code[ip++] = inst;
     }
+
     private int skipEmit(int numplace) {
         ip += numplace;
         return ip;
     }
+    
     private void skipTo(int oldpos) {
         ip = oldpos;
     }
@@ -77,28 +106,10 @@ public class ByteCodeCompiler {
         emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()));
     }
 
-    private void handleOperators(Node node) {
-        switch (node.getData().charAt(0)) {
-            case '|': handleOrOperator(node); break;
-            case '*': handleKleeneOp(node); break;
-            case '+': handleAtLeastOnce(node); break;
-            case '?': handleZeroOrOnce(node); break;
-            case '@': { 
-                build(node.getLeft());
-                build(node.getRight());
-            } break;
-            default:
-                break;
-        }
-    }
-    private void build(Node node) {
-        switch (node.getType()) {
-            case OPERATOR: {
-                handleOperators(node);
-            } break;
-            case LITERAL: {
-                handleLiteral(node);
-            } break;         
-        }
+    private void grow(int newSize) {
+        Instruction[] tmp = code;
+        code = new Instruction[newSize];
+        System.arraycopy(tmp, 0, code, 0, MAX_CODE);
+        MAX_CODE = newSize;
     }
 }

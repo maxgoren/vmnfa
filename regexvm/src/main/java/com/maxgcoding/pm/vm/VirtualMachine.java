@@ -8,8 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 public class VirtualMachine implements PatternMatcher {
+    
     private Instruction[] code;
+    
     private String toMatch;
+    
     public VirtualMachine(Instruction[] c) {
         this.code = c;
     }
@@ -19,14 +22,24 @@ public class VirtualMachine implements PatternMatcher {
         this.toMatch = text;
         return iterativeBT();
     }
+
+        public boolean iterativeBT() {
+        Stack<VMThread> threads = new Stack<>();
+        threads.push(new VMThread(0, 0));
+        while (!threads.empty()) {
+            VMThread thread = threads.pop();
+            if (runThread(threads, thread.getInst(), thread.getStrPos())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Instruction fetch(int index) {
         if (index > code.length || code[index] == null)
             throw new RuntimeException("Illegal instruction");
         Instruction inst = code[index];
-        if (inst.getInst().equals(InstType.CHAR))
-            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getOperand() + " ]");
-        else
-            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + inst.getAlternate() + "]");
+        printInstruction(index, inst);
         return inst;
     }
     
@@ -36,8 +49,6 @@ public class VirtualMachine implements PatternMatcher {
         private Integer inst;
         private Integer strPos;
     };
-
-
 
     private boolean runThread(Stack<VMThread> st, Integer ipos, Integer spos) {
         while (true) {
@@ -66,18 +77,10 @@ public class VirtualMachine implements PatternMatcher {
             }
         }
     }
-
-
-    public boolean iterativeBT() {
-        Instruction inst;
-        Stack<VMThread> threads = new Stack<>();
-        threads.push(new VMThread(0, 0));
-        while (!threads.empty()) {
-            VMThread thread = threads.pop();
-            if (runThread(threads, thread.getInst(), thread.getStrPos())) {
-                return true;
-            }
+        private void printInstruction(int index, Instruction inst) {
+            if (inst.getInst().equals(InstType.CHAR))
+                System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getOperand() + " ]");
+            else
+                System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + inst.getAlternate() + "]");
         }
-        return false;
-    }
 }
