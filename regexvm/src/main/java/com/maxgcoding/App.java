@@ -14,7 +14,7 @@ public final class App {
     public static void main(String[] args) {
         App app = new App();
         app.example(NFAType.VIRTUAL_MACHINE, "(a*?b|a+?c)d", List.of("aaaabd", "abd", "aaaacd", "acd", "bd","cd"));
-        app.example(NFAType.DIGRAPH, "(a*b|a+c)d", List.of("aaaabd", "abd", "aaaacd", "acd", "bd","cd"));
+        //app.example(NFAType.DIGRAPH, "(a*b|a+c)d", List.of("aaaabd", "abd", "aaaacd", "acd", "bd","cd"));
         app.example(NFAType.VIRTUAL_MACHINE, "ab?c", List.of("abc", "ac", "abbc"));
     }
     
