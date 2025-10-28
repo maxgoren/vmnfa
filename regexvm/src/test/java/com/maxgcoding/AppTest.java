@@ -27,6 +27,18 @@ class AppTest {
         }
     }
 
+@Test
+    void testVM2() {
+        String pattern = "a+b+";
+        NFAType type = NFAType.VIRTUAL_MACHINE;
+        List<String> testStrings = List.of("ab", "aab", "abab", "aaaaaaaaaaabbbbbbbbbb", "abbbbb");
+        PatternMatcher pm = Match.patternMatcherFactory(pattern, type);
+        for (String str : testStrings) {
+            System.out.println("Checking " + str + " with '" + pattern + "':");
+            assertTrue(pm.match(str));
+        }
+    }
+
     /*
      * test Linked Digraph NFA
      */

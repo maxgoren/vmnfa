@@ -1,5 +1,5 @@
 package com.maxgcoding.parse;
 
 public enum NodeType {
-    LITERAL, OPERATOR
+    LITERAL, OPERATOR, LAZY_OPERATOR
 }

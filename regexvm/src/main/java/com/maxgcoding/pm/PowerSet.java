@@ -12,7 +12,7 @@ public class PowerSet implements PatternMatcher {
     private int matchFrom;
     private int matchLen;
     private int cpos;
-    private NFA nfa;
+    private final NFA nfa;
 
     public PowerSet(NFA nfa) {
         this.nfa = nfa;
@@ -35,7 +35,6 @@ public class PowerSet implements PatternMatcher {
         return next.contains(nfa.getAccept());
     }
 
-
     private Set<NFAState> e_closure(Set<NFAState> states) {
         Set<NFAState> next = new HashSet<>();
         Stack<NFAState> st = new Stack<>();
@@ -52,6 +51,8 @@ public class PowerSet implements PatternMatcher {
         }
         return next;
     }
+
+
     private Set<NFAState> move(Character c, Set<NFAState> states) {
         Set<NFAState> next = new HashSet<>();
         for (NFAState state : states) {
@@ -64,6 +65,7 @@ public class PowerSet implements PatternMatcher {
         }
         return next;
     }
+
     private Set<NFAState> checkMatchAndReset(NFA nfa, String text, Set<NFAState> next) {
         if (next.contains(nfa.getAccept())) {
             System.out.print("Match found: ");

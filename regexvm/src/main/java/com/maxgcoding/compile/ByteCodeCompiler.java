@@ -22,12 +22,12 @@ public class ByteCodeCompiler {
         ip = 0;
     }
 
-    private void handleOperators(Node node) {
+    private void handleOperators(Node node, Boolean makeLazy) {
         switch (node.getData()) {
             case '|' -> handleOrOperator(node);
-            case '*' -> handleKleeneOp(node);
-            case '+' -> handleAtLeastOnce(node);
-            case '?' -> handleZeroOrOnce(node);
+            case '*' -> handleKleeneOp(node, makeLazy);
+            case '+' -> handleAtLeastOnce(node, makeLazy);
+            case '?' -> handleZeroOrOnce(node, makeLazy);
             case '@' -> { 
                 build(node.getLeft());
                 build(node.getRight());
@@ -37,7 +37,8 @@ public class ByteCodeCompiler {
     }
     private void build(Node node) {
         switch (node.getType()) {
-            case OPERATOR -> handleOperators(node);
+            case OPERATOR -> handleOperators(node, Boolean.FALSE);
+            case LAZY_OPERATOR -> handleOperators(node, Boolean.TRUE);
             case LITERAL ->  handleLiteral(node);
         }
     }
@@ -76,30 +77,45 @@ public class ByteCodeCompiler {
         skipTo(L3); 
     }
 
-    private void handleKleeneOp(Node node) {
+    private void handleKleeneOp(Node node, Boolean makeLazy) {
         int spos = skipEmit(0);
         skipEmit(1);
         int L1 = skipEmit(0);
         build(node.getLeft());
         int L2 = skipEmit(0);
         skipTo(spos);
-        emit(new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(L2+1));
+        if (makeLazy) {
+            emit(new Instruction().setInst(InstType.SPLIT).setNext(L2+1).setAlternate(L1));
+        } else {
+            emit(new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(L2+1));
+        }
         skipTo(L2);
         emit(new Instruction().setInst(InstType.JMP).setNext(spos));
     }
 
-    private void handleZeroOrOnce(Node node) {
+    private void handleZeroOrOnce(Node node, Boolean makeLazy) {
         int spos = skipEmit(0);
+        skipEmit(1);
         build(node.getLeft());
         int L1 = skipEmit(0);
-        emit(new Instruction().setInst(InstType.SPLIT).setNext(spos).setAlternate(L1+1));
+        skipTo(spos);
+        if (makeLazy) {
+            emit(new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(spos+1));
+        } else {
+            emit(new Instruction().setInst(InstType.SPLIT).setNext(spos+1).setAlternate(L1));
+        }
+        skipTo(L1);
     }
 
-    private void handleAtLeastOnce(Node node) {
+    private void handleAtLeastOnce(Node node, Boolean makeLazy) {
         int spos = skipEmit(0);
         build(node.getLeft());
         int L1 = skipEmit(0);
-        emit(new Instruction().setInst(InstType.SPLIT).setNext(spos).setAlternate(L1+1));
+        if (makeLazy) {
+            emit(new Instruction().setInst(InstType.SPLIT).setNext(L1+1).setAlternate(spos));
+        } else {
+            emit(new Instruction().setInst(InstType.SPLIT).setNext(spos).setAlternate(L1+1));
+        }
     }
 
     private void handleLiteral(Node node) {

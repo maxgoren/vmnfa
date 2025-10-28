@@ -23,8 +23,8 @@ public class Transition {
     }
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Transition) {
-            return this.edgeLabel.equals(((Transition) o).getEdgeLabel()) && this.destination.equals(((Transition) o).getDestination());
+        if (o instanceof Transition transition) {
+            return this.edgeLabel.equals(transition.getEdgeLabel()) && this.destination.equals(transition.getDestination());
         }
         return false;
     }

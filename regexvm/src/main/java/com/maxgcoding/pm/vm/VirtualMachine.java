@@ -9,9 +9,16 @@ import lombok.Data;
 
 public class VirtualMachine implements PatternMatcher {
     
-    private Instruction[] code;
+    private final Instruction[] code;
     
     private String toMatch;
+
+    @Data
+    @AllArgsConstructor
+    private class VMThread {
+        private Integer inst;
+        private Integer strPos;
+    };
     
     public VirtualMachine(Instruction[] c) {
         this.code = c;
@@ -23,7 +30,7 @@ public class VirtualMachine implements PatternMatcher {
         return iterativeBT();
     }
 
-        public boolean iterativeBT() {
+    public boolean iterativeBT() {
         Stack<VMThread> threads = new Stack<>();
         threads.push(new VMThread(0, 0));
         while (!threads.empty()) {
@@ -42,13 +49,6 @@ public class VirtualMachine implements PatternMatcher {
         printInstruction(index, inst);
         return inst;
     }
-    
-    @Data
-    @AllArgsConstructor
-    private class VMThread {
-        private Integer inst;
-        private Integer strPos;
-    };
 
     private boolean runThread(Stack<VMThread> st, Integer ipos, Integer spos) {
         while (true) {
@@ -60,27 +60,28 @@ public class VirtualMachine implements PatternMatcher {
                 return false;
             }
             switch (inst.getInst()) {
-                case JMP -> { ipos = inst.getNext(); }
                 case CHAR -> {
-                    if (!inst.getOperand().equals(toMatch.charAt(spos))) {
+                    if (spos < toMatch.length() && !inst.getOperand().equals(toMatch.charAt(spos))) {
                         return false;
                     }
-                    ipos++;
-                    spos++;
+                    ipos++; spos++;
                 }
                 case SPLIT -> {
                     st.push(new VMThread(inst.getAlternate(), spos));
                     ipos = inst.getNext();
                 } 
+                case JMP -> { ipos = inst.getNext(); }
                 case MATCH -> { return true; }
                 case HALT -> { return false; }
             }
         }
     }
-        private void printInstruction(int index, Instruction inst) {
-            if (inst.getInst().equals(InstType.CHAR))
-                System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getOperand() + " ]");
-            else
-                System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + inst.getAlternate() + "]");
+
+    private void printInstruction(int index, Instruction inst) {
+        if (inst.getInst().equals(InstType.CHAR)) {
+            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getOperand() + " ]");
+        } else {
+            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + inst.getAlternate() + "]");
         }
+    }
 }

@@ -54,9 +54,13 @@ public class Parser {
         }
         if (expect('*') || expect('+') || expect('?')) {
             Node n = new Node();
-            n.setType(NodeType.OPERATOR);
             n.setData(lookahead());
             match(lookahead());
+            if (expect('?')) {
+                n.setType(NodeType.LAZY_OPERATOR);
+            } else {
+                n.setType(NodeType.OPERATOR);
+            }
             n.setLeft(lhs);
             lhs = n;
         }

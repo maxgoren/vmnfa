@@ -12,7 +12,6 @@ import com.maxgcoding.pm.PowerSet;
 import com.maxgcoding.pm.vm.VirtualMachine;
 
 public class Match {
-    private Parser parser;
     
     private Match() {
     
