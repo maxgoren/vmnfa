@@ -61,6 +61,7 @@ public class Parser {
             } else {
                 n.setType(NodeType.OPERATOR);
             }
+            match('?');
             n.setLeft(lhs);
             lhs = n;
         }
