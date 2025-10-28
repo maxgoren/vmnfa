@@ -58,10 +58,11 @@ public class Parser {
             match(lookahead());
             if (expect('?')) {
                 n.setType(NodeType.LAZY_OPERATOR);
+                match('?');
             } else {
                 n.setType(NodeType.OPERATOR);
+                match('?');
             }
-            match('?');
             n.setLeft(lhs);
             lhs = n;
         }
