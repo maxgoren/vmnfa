@@ -6,7 +6,6 @@ import com.maxgcoding.fa.NFA;
 import com.maxgcoding.fa.NFAState;
 import com.maxgcoding.fa.Transition;
 import com.maxgcoding.parse.Node;
-import com.maxgcoding.parse.NodeType;
 
 public class NFACompiler {
     
@@ -27,6 +26,13 @@ public class NFACompiler {
     }
 
     private NFA makeAtomic(Character str) {
+        NFAState ns = new NFAState(makeLabel());
+        NFAState ts = new NFAState(makeLabel());
+        ns.addTransition(new Transition(str, ts));
+        return new NFA(ns,ts);
+    }
+
+    private NFA makeCCLAtomic(String str) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
         ns.addTransition(new Transition(str, ts));
@@ -68,44 +74,48 @@ public class NFACompiler {
     private void compile(Node node) {
         if (node == null)
             return;
-        if (node.getType().equals(NodeType.LITERAL)) {
-            st.push(makeAtomic(node.getData()));
-        } else {
-            switch (node.getData()) {
-                case '|' -> {
-                        compile(node.getLeft());
-                        compile(node.getRight());
-                        NFA rhs = st.pop();
-                        NFA lhs = st.pop();
-                        st.push(makeAlternate(lhs, rhs));
-                        break;
-                    }
-                case '@' -> {
-                        compile(node.getLeft());
-                        compile(node.getRight());
-                        NFA rhs = st.pop();
-                        NFA lhs = st.pop();
-                        st.push(makeConcat(lhs, rhs));
-                        break;
-                    }
-                case '*' -> {
-                        compile(node.getLeft());
-                        NFA lhs = st.pop();
-                        st.push(makeKleene(lhs, false));
-                        break;
-                    }
-                case '+' -> {
-                        compile(node.getLeft());
-                        NFA lhs = st.pop();
-                        st.push(makeKleene(lhs, true));
-                        break;
-                    }
-                case '?' -> {
-                        compile(node.getLeft());
-                        NFA lhs = st.pop();
-                        st.push(makeAlternate(lhs, makeEpsilonAtomic()));
-                        break;
-                    }
+        switch (node.getType()) {
+            case LITERAL -> st.push(makeAtomic(node.getData()));
+            case CCL -> st.push(makeCCLAtomic(node.getCcl()));
+            case LAZY_OPERATOR, OPERATOR -> compileOperator(node);
+        }
+    }
+
+    private void compileOperator(Node node) {
+        switch (node.getData()) {
+            case '|' -> {
+                compile(node.getLeft());
+                compile(node.getRight());
+                NFA rhs = st.pop();
+                NFA lhs = st.pop();
+                st.push(makeAlternate(lhs, rhs));
+                break;
+            }
+            case '@' -> {
+                compile(node.getLeft());
+                compile(node.getRight());
+                NFA rhs = st.pop();
+                NFA lhs = st.pop();
+                st.push(makeConcat(lhs, rhs));
+                break;
+            }
+            case '*' -> {
+                compile(node.getLeft());
+                NFA lhs = st.pop();
+                st.push(makeKleene(lhs, false));
+                break;
+            }
+            case '+' -> {
+                compile(node.getLeft());
+                NFA lhs = st.pop();
+                st.push(makeKleene(lhs, true));
+                break;
+            }
+            case '?' -> {
+                compile(node.getLeft());
+                NFA lhs = st.pop();
+                st.push(makeAlternate(lhs, makeEpsilonAtomic()));
+                break;
             }
         }
     }

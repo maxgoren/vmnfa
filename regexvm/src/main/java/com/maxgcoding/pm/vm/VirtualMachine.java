@@ -22,6 +22,7 @@ public class VirtualMachine implements PatternMatcher {
     
     public VirtualMachine(Instruction[] c) {
         this.code = c;
+        dump();
     }
     
     @Override
@@ -77,11 +78,29 @@ public class VirtualMachine implements PatternMatcher {
         }
     }
 
-    private void printInstruction(int index, Instruction inst) {
-        if (inst.getInst().equals(InstType.CHAR)) {
-            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getOperand() + " ]");
-        } else {
-            System.out.println("Executing " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + inst.getAlternate() + "]");
+    public final void dump() {
+        System.out.println("Loaded program: ");
+        printProgram(code);
+        System.err.println("-------------------");
+    }
+
+    public static void printInstruction(int index, Instruction inst) {
+        switch (inst.getInst()) {
+            case CHAR -> System.out.println("Instruction " + index + ": [" + inst.getInst() + "     " + inst.getOperand() + " " + inst.getNext() + " ]");
+            case JMP -> System.out.println("Instruction " + index + ": [" + inst.getInst() + "      " + inst.getNext() + " - ]");
+
+            case MATCH -> System.out.println("Instruction " + index + ": [ MATCH\t]");
+            default -> System.out.println("Instruction " + index + ": [" + inst.getInst() + "    " + inst.getNext() + " " + (inst.getAlternate() == null ? "-":inst.getAlternate()) + " ]");
         }
     }
+
+    public static void printProgram(Instruction[] instructions) {
+        for (int i = 0; ; i++) {
+            printInstruction(i, instructions[i]);
+            if (instructions[i].getInst().equals(InstType.MATCH)) {
+                return;
+            }
+        }
+    }
+
 }

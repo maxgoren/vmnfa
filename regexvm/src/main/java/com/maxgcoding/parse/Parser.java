@@ -38,6 +38,10 @@ public class Parser {
             spos++;
     }
 
+    private Boolean isLit() {
+        return Character.isAlphabetic(lookahead()) || Character.isDigit(lookahead()) || expect('.') || expect('[');
+    }
+
     private Node factor() {
         Node lhs = null;
         if (expect('(')) {
@@ -45,12 +49,23 @@ public class Parser {
             Node m = expr();
             lhs = m;
             match(')');
-        } else if (Character.isAlphabetic(lookahead()) || Character.isDigit(lookahead()) || expect('.')) {
+        } else if (isLit()) {
             lhs = new Node();
-            lhs.setType(NodeType.LITERAL);
-            lhs.setData(lookahead());
-            System.out.println("Matched Literal: " + lookahead());
-            advance();
+            if (expect('[')) {
+                lhs.setType(NodeType.CCL);
+                StringBuilder data = new StringBuilder();
+                while (!expect(']')) {
+                    data.append(lookahead());
+                    advance();
+                }
+                advance();
+                lhs.setCcl(data.toString());
+            } else {
+                lhs.setType(NodeType.LITERAL);
+                lhs.setData(lookahead());
+                System.out.println("Matched Literal: " + lookahead());
+                advance();
+            }
         }
         if (expect('*') || expect('+') || expect('?')) {
             Node n = new Node();
@@ -69,7 +84,7 @@ public class Parser {
     }
     private Node term() {
         Node lhs = factor();
-        if (expect('(') || (Character.isDigit(lookahead()) || Character.isAlphabetic(lookahead()))) {
+        if (expect('(') || isLit()) {
             Node t = new Node();
             t.setType(NodeType.OPERATOR);
             t.setData('@'); 

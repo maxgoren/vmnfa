@@ -1,6 +1,7 @@
 package com.maxgcoding.compile;
 
 import com.maxgcoding.parse.Node;
+import com.maxgcoding.parse.NodeType;
 import com.maxgcoding.pm.vm.InstType;
 import com.maxgcoding.pm.vm.Instruction;
 
@@ -11,15 +12,24 @@ public class ByteCodeCompiler {
     private int MAX_CODE;
     
     public Instruction[] compile(Node node) {
-        init();
+        init(node);
         build(node);
         emit(new Instruction().setInst(InstType.MATCH));
         return code;
     }
-    private void init() {
-        MAX_CODE = 5;
+    private void init(Node node) {
+        MAX_CODE = countInstructions(node);
+        System.out.println("Resrving space for " + MAX_CODE + " instructions");
         code = new Instruction[MAX_CODE];
         ip = 0;
+    }
+
+    private int countInstructions(Node node) {
+        if (node == null)
+            return 0;
+        if (node.getType().equals(NodeType.LITERAL))
+            return 1;
+        return 1 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
     }
 
     private void handleOperators(Node node, Boolean makeLazy) {
@@ -119,7 +129,7 @@ public class ByteCodeCompiler {
     }
 
     private void handleLiteral(Node node) {
-        emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()));
+        emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()).setNext(ip+1));
     }
 
     private void grow(int newSize) {
