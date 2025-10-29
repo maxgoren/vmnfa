@@ -1,5 +1,5 @@
 package com.maxgcoding.pm.vm;
 
 public enum InstType {
-    CHAR, MATCH, JMP, SPLIT, HALT
+    CHAR, CCL, MATCH, JMP, SPLIT,HALT
 }

@@ -50,6 +50,7 @@ public class ByteCodeCompiler {
             case OPERATOR -> handleOperators(node, Boolean.FALSE);
             case LAZY_OPERATOR -> handleOperators(node, Boolean.TRUE);
             case LITERAL ->  handleLiteral(node);
+            case CCL -> handleCCL(node);
         }
     }
 
@@ -130,6 +131,10 @@ public class ByteCodeCompiler {
 
     private void handleLiteral(Node node) {
         emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()).setNext(ip+1));
+    }
+
+    private void handleCCL(Node node) {
+        emit(new Instruction().setInst(InstType.CCL).setCclOperand(node.getCcl()).setNext(ip+1));
     }
 
     private void grow(int newSize) {

@@ -17,6 +17,8 @@ public final class App {
         //app.example(NFAType.DIGRAPH, "(a*b|a+c)d", List.of("aaaabd", "abd", "aaaacd", "acd", "bd","cd"));
         //app.example(NFAType.VIRTUAL_MACHINE, "ab?c", List.of("abc", "ac", "abbc"));
         app.example(NFAType.DIGRAPH, "(a+[bc])d", List.of("aaaabd", "abd", "aaaacd", "acd", "bd","cd"));
+        app.example(NFAType.VIRTUAL_MACHINE, "(r[aeiou]n.)", List.of("run", "ran", "ring", "render"));
+
     }
     
     private void example(NFAType type, String pattern, List<String> testStrings) {

@@ -62,7 +62,13 @@ public class VirtualMachine implements PatternMatcher {
             }
             switch (inst.getInst()) {
                 case CHAR -> {
-                    if (spos < toMatch.length() && !inst.getOperand().equals(toMatch.charAt(spos))) {
+                    if (spos < toMatch.length() && (!inst.getOperand().equals(toMatch.charAt(spos)) && !inst.getOperand().equals('.'))) {
+                        return false;
+                    }
+                    ipos++; spos++;
+                }
+                case CCL -> {
+                    if (spos < toMatch.length() && !inst.getCclOperand().contains(String.valueOf(toMatch.charAt(spos)))) {
                         return false;
                     }
                     ipos++; spos++;

@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 public class Instruction {
     private InstType inst;
     private Character operand;
+    private String cclOperand;
     private Integer next;
     private Integer alternate;
 }
