@@ -5,8 +5,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-import com.maxgcoding.pm.NFAType;
-import com.maxgcoding.pm.PatternMatcher;
+import com.maxgcoding.regex.pm.NFAType;
+import com.maxgcoding.regex.pm.PatternMatcher;
 
 /**
  * Unit test for RegEx VM and Digraph NFA matchers

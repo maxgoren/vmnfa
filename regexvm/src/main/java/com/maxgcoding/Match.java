@@ -1,15 +1,15 @@
 package com.maxgcoding;
 
-import com.maxgcoding.compile.ByteCodeCompiler;
-import com.maxgcoding.compile.NFACompiler;
-import com.maxgcoding.fa.NFA;
-import com.maxgcoding.parse.Node;
-import com.maxgcoding.parse.Parser;
-import com.maxgcoding.parse.Traversal;
-import com.maxgcoding.pm.NFAType;
-import com.maxgcoding.pm.PatternMatcher;
-import com.maxgcoding.pm.PowerSet;
-import com.maxgcoding.pm.vm.VirtualMachine;
+import com.maxgcoding.regex.compile.ByteCodeCompiler;
+import com.maxgcoding.regex.compile.NFACompiler;
+import com.maxgcoding.regex.fa.NFA;
+import com.maxgcoding.regex.parse.Node;
+import com.maxgcoding.regex.parse.Parser;
+import com.maxgcoding.regex.parse.Traversal;
+import com.maxgcoding.regex.pm.NFAType;
+import com.maxgcoding.regex.pm.PatternMatcher;
+import com.maxgcoding.regex.pm.PowerSet;
+import com.maxgcoding.regex.pm.vm.VirtualMachine;
 
 public class Match {
     
