@@ -1,11 +1,11 @@
-package com.maxgcoding;
+package com.maxgcoding.regex;
 
 import com.maxgcoding.regex.compile.ByteCodeCompiler;
 import com.maxgcoding.regex.compile.NFACompiler;
-import com.maxgcoding.regex.fa.NFA;
-import com.maxgcoding.regex.parse.Node;
-import com.maxgcoding.regex.parse.Parser;
-import com.maxgcoding.regex.parse.Traversal;
+import com.maxgcoding.regex.compile.parse.Node;
+import com.maxgcoding.regex.compile.parse.Parser;
+import com.maxgcoding.regex.compile.parse.Traversal;
+import com.maxgcoding.regex.digraph.NFA;
 import com.maxgcoding.regex.pm.NFAType;
 import com.maxgcoding.regex.pm.PatternMatcher;
 import com.maxgcoding.regex.pm.PowerSet;
@@ -41,10 +41,10 @@ public class Match {
     public static boolean matchPowerSet(String text, String pattern) {
         Parser p = new Parser();
         NFACompiler c = new NFACompiler();
-        Node ast = p.parse("(a*b|ac)d");
+        Node ast = p.parse(pattern);
         Traversal.traverse(ast);
         NFA nfa = c.build(ast);
         PowerSet ps = new PowerSet(nfa);
-        return ps.match("aacd");
+        return ps.match(text);
     }
 }

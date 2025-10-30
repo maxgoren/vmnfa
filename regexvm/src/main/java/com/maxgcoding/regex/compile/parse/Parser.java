@@ -1,4 +1,4 @@
-package com.maxgcoding.regex.parse;
+package com.maxgcoding.regex.compile.parse;
 
 import lombok.Data;
 
@@ -38,8 +38,26 @@ public class Parser {
             spos++;
     }
 
-    private Boolean isLit() {
-        return Character.isAlphabetic(lookahead()) || Character.isDigit(lookahead()) || expect('.') || expect('[');
+    private void rewind() {
+        spos--;
+    }
+
+    private Boolean isValLiteral(Character ch) {
+        return Character.isAlphabetic(ch) || Character.isDigit(ch) || expect('.') || expect('[');
+    }
+
+    private Boolean isPerlEscape(Character c) {
+        if (isEscapeChar(c)) {
+            advance();
+            if (c.equals('d') || c.equals('s') || c.equals('w'))
+                return true;
+        }
+        rewind();
+        return false;
+    }
+
+    private Boolean isEscapeChar(Character c) {
+        return c.equals('\\');
     }
 
     private Node factor() {
@@ -49,16 +67,33 @@ public class Parser {
             Node m = expr();
             lhs = m;
             match(')');
-        } else if (isLit()) {
+        } else if (isEscapeChar(lookahead())) {
+            if (isPerlEscape(lookahead())) {
+                switch (lookahead()) {
+                    case 'D' -> { lhs = new Node().setType(NodeType.CCL).setCcl("[0-9]"); }
+                    case 'd' -> { lhs = new Node().setType(NodeType.CCL).setCcl("[A-Za-z]"); }
+                    case 'S' -> { }
+                    case 's' -> { }
+                    case 'w' -> { }
+                    case 'W' -> { }
+                }
+            } else {
+                advance();
+                lhs = new Node();
+                lhs.setType(NodeType.LITERAL);
+                lhs.setData(lookahead());
+            }
+        } else if (isValLiteral(lookahead())) {
             if (expect('[')) {
                 lhs = new Node();
                 lhs.setType(NodeType.CCL);
+                match('[');
                 StringBuilder data = new StringBuilder();
                 while (!expect(']')) {
                     data.append(lookahead());
-                    advance();
+                    match(lookahead());
                 }
-                advance();
+                match(']');
                 lhs.setCcl(data.toString());
             } else {
                 lhs = new Node();
@@ -85,7 +120,7 @@ public class Parser {
     }
     private Node term() {
         Node lhs = factor();
-        if (expect('(') || isLit()) {
+        if (expect('(') || isValLiteral(lookahead()) || isEscapeChar(lookahead())) {
             Node t = new Node();
             t.setType(NodeType.OPERATOR);
             t.setData('@'); 

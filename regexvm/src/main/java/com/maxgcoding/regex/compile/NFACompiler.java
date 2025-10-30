@@ -2,10 +2,10 @@ package com.maxgcoding.regex.compile;
 
 import java.util.Stack;
 
-import com.maxgcoding.regex.fa.NFA;
-import com.maxgcoding.regex.fa.NFAState;
-import com.maxgcoding.regex.fa.Transition;
-import com.maxgcoding.regex.parse.Node;
+import com.maxgcoding.regex.compile.parse.Node;
+import com.maxgcoding.regex.digraph.NFA;
+import com.maxgcoding.regex.digraph.NFAState;
+import com.maxgcoding.regex.digraph.Transition;
 
 public class NFACompiler {
     

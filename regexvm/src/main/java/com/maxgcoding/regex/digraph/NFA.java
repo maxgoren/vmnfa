@@ -1,4 +1,4 @@
-package com.maxgcoding.regex.fa;
+package com.maxgcoding.regex.digraph;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

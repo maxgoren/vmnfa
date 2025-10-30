@@ -1,7 +1,7 @@
 package com.maxgcoding.regex.compile;
 
-import com.maxgcoding.regex.parse.Node;
-import com.maxgcoding.regex.parse.NodeType;
+import com.maxgcoding.regex.compile.parse.Node;
+import com.maxgcoding.regex.compile.parse.NodeType;
 import com.maxgcoding.regex.pm.vm.InstType;
 import com.maxgcoding.regex.pm.vm.Instruction;
 

@@ -1,4 +1,4 @@
-package com.maxgcoding.regex.parse;
+package com.maxgcoding.regex.compile.parse;
 
 public class Traversal {
     private static void traverse(Node node, int depth) {

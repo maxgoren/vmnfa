@@ -1,4 +1,4 @@
-package com.maxgcoding.regex.fa;
+package com.maxgcoding.regex.digraph;
 
 import java.util.ArrayList;
 

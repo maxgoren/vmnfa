@@ -61,17 +61,19 @@ public class VirtualMachine implements PatternMatcher {
                 return false;
             }
             switch (inst.getInst()) {
-                case CHAR -> {
-                    if (spos < toMatch.length() && !inst.match(toMatch.charAt(spos))) {
+                case CHAR, CCL -> {
+                    if (spos < toMatch.length()) {
+                        if (!inst.match(toMatch.charAt(spos))) {
+                            System.out.println("Nope.");
+                            return false;
+                        }
+                        ipos = inst.getNext();
+                        System.out.println(spos);
+                        spos = spos + 1;
+                        System.out.println(spos);
+                    } else {
                         return false;
                     }
-                    ipos++; spos++;
-                }
-                case CCL -> {
-                    if (spos < toMatch.length() && !inst.match(toMatch.charAt(spos))) {
-                        return false;
-                    }
-                    ipos++; spos++;
                 }
                 case SPLIT -> {
                     st.push(new VMThread(inst.getAlternate(), spos));

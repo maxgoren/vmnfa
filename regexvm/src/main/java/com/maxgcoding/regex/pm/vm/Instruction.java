@@ -21,9 +21,14 @@ public class Instruction {
     } 
 
     private boolean matchCcl(Character ch) {
-        for (Character c : cclOperand.toCharArray()) {
-            if (c.equals(ch))
+        char[] raw = cclOperand.toCharArray();
+        for (int i = 0; i < raw.length; i++) {
+            Character c = raw[i];
+            if (i+2 < raw.length && raw[i+1] == '-') {
+                return ch.compareTo(c) >= 0 && ch.compareTo(raw[i+2]) <= 0;
+            } else if (c.equals(ch)) {
                 return true;
+            }
         }
         return false;
     }
@@ -31,10 +36,13 @@ public class Instruction {
     @Override
     public String toString() {
         switch (this.inst) {
-            case CHAR -> { return "[" + inst + "     " + this.operand + " " + this.next + " ]"; }
-            case JMP -> { return ": [" + inst + "      " + this.next + " - ]"; }
-            case MATCH -> { return " [ MATCH ]"; }
-            default -> { return " [" + inst + "    " + next + " " + (alternate == null ? "-":alternate) + " ]"; }
+            case CHAR ->  { return "[" + inst + "     " + this.operand + " " + this.next + " ]"; }
+            case CCL ->   { return "[" + inst + "     [" + this.cclOperand + "] " + this.next + " ]"; }
+            case JMP ->   { return "[" + inst + "      " + this.next + " - ]"; }
+            case SPLIT -> { return "[" + inst + "    " + next + " " + (alternate == null ? "-":alternate) + " ]"; }
+            case MATCH -> { return "[ MATCH ]"; }
+            case HALT ->  { return "[ HALT ]"; }
+            default -> { return ""; }
         }
     }
 }
