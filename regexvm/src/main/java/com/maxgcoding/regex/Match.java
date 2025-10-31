@@ -2,9 +2,9 @@ package com.maxgcoding.regex;
 
 import com.maxgcoding.regex.compile.ByteCodeCompiler;
 import com.maxgcoding.regex.compile.NFACompiler;
-import com.maxgcoding.regex.compile.parse.Node;
+import com.maxgcoding.regex.compile.parse.AST;
 import com.maxgcoding.regex.compile.parse.Parser;
-import com.maxgcoding.regex.compile.parse.Traversal;
+import com.maxgcoding.regex.compile.parse.PrettyPrint;
 import com.maxgcoding.regex.digraph.NFA;
 import com.maxgcoding.regex.digraph.PowerSet;
 import com.maxgcoding.regex.pm.EngineType;
@@ -19,7 +19,7 @@ public class Match {
 
     public static PatternMatcher patternMatcherFactory(String pattern, EngineType type) {
         Parser parser = new Parser();
-        Node ast = parser.parse(pattern);
+        AST ast = parser.parse(pattern);
         return type.equals(EngineType.DIGRAPH) ? new PowerSet(new NFACompiler().build(ast)):new VirtualMachine(new ByteCodeCompiler().compile(ast));
     }
 
@@ -32,8 +32,8 @@ public class Match {
     public static boolean matchVM(String text, String pattern) {
         Parser p = new Parser();
         ByteCodeCompiler c = new ByteCodeCompiler();
-        Node ast = p.parse(pattern);
-        Traversal.traverse(ast);
+        AST ast = p.parse(pattern);
+        PrettyPrint.traverse(ast);
         VirtualMachine vm = new VirtualMachine(c.compile(ast));
         return vm.match(text);
     } 
@@ -41,8 +41,8 @@ public class Match {
     public static boolean matchPowerSet(String text, String pattern) {
         Parser p = new Parser();
         NFACompiler c = new NFACompiler();
-        Node ast = p.parse(pattern);
-        Traversal.traverse(ast);
+        AST ast = p.parse(pattern);
+        PrettyPrint.traverse(ast);
         NFA nfa = c.build(ast);
         PowerSet ps = new PowerSet(nfa);
         return ps.match(text);

@@ -1,5 +1,10 @@
 package com.maxgcoding.regex.compile.parse;
 
+import com.maxgcoding.regex.compile.parse.ast.CharClassNode;
+import com.maxgcoding.regex.compile.parse.ast.LazyOperatorNode;
+import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
+import com.maxgcoding.regex.compile.parse.ast.OperatorNode;
+
 import lombok.Data;
 
 @Data
@@ -8,10 +13,10 @@ public class Parser {
     private int spos;
 
     
-    public Node parse(String rexpr) {
+    public AST parse(String rexpr) {
         this.current = rexpr;
         this.spos = 0;
-        Node t = expr();
+        AST t = expr();
         return new CharClassNode().setCcl(rexpr).setLeft(t);
     }
     
@@ -61,11 +66,11 @@ public class Parser {
         return c.equals('\\');
     }
 
-    private Node factor() {
-        Node lhs = null;
+    private AST factor() {
+        AST lhs = null;
         if (expect('(')) {
             match('(');
-            Node m = expr();
+            AST m = expr();
             lhs = m;
             match(')');
         } else if (isEscapeChar(lookahead())) {
@@ -101,7 +106,7 @@ public class Parser {
             }
         }
         if (expect('*') || expect('+') || expect('?')) {
-            Node n;
+            AST n;
             if (expect('?')) {
                 n = new LazyOperatorNode();
                 match('?');
@@ -115,10 +120,10 @@ public class Parser {
         }
         return lhs;
     }
-    private Node term() {
-        Node lhs = factor();
+    private AST term() {
+        AST lhs = factor();
         if (expect('(') || isValLiteral(lookahead()) || isEscapeChar(lookahead())) {
-            Node t = new OperatorNode();
+            AST t = new OperatorNode();
             t.setData('@'); 
             t.setLeft(lhs);
             System.out.println("Making Concat");
@@ -127,11 +132,11 @@ public class Parser {
         }
         return lhs;
     }
-    private Node expr() {
-        Node lhs = term();
+    private AST expr() {
+        AST lhs = term();
         if (expect('|')) {
             match('|');
-            Node t = new OperatorNode();
+            AST t = new OperatorNode();
             t.setData('|');
             t.setLeft(lhs);
             t.setRight(expr());

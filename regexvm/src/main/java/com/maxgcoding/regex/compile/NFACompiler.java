@@ -2,11 +2,11 @@ package com.maxgcoding.regex.compile;
 
 import java.util.Stack;
 
-import com.maxgcoding.regex.compile.parse.CharClassNode;
-import com.maxgcoding.regex.compile.parse.LazyOperatorNode;
-import com.maxgcoding.regex.compile.parse.LiteralNode;
-import com.maxgcoding.regex.compile.parse.Node;
-import com.maxgcoding.regex.compile.parse.OperatorNode;
+import com.maxgcoding.regex.compile.parse.AST;
+import com.maxgcoding.regex.compile.parse.ast.CharClassNode;
+import com.maxgcoding.regex.compile.parse.ast.LazyOperatorNode;
+import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
+import com.maxgcoding.regex.compile.parse.ast.OperatorNode;
 import com.maxgcoding.regex.digraph.NFA;
 import com.maxgcoding.regex.digraph.NFAState;
 import com.maxgcoding.regex.digraph.Transition;
@@ -24,7 +24,7 @@ public class NFACompiler {
         st = new Stack<>();
     }
 
-    public NFA build(Node node) {
+    public NFA build(AST node) {
         compile(node.getLeft());
         return st.pop();
     }
@@ -75,7 +75,7 @@ public class NFACompiler {
         lhs.getAccept().addTransition(new Transition(ts));
         return new NFA(ns, ts);
     }
-    private void compile(Node curr) {
+    private void compile(AST curr) {
         switch (curr) {
             case null -> { }
             case LiteralNode node -> st.push(makeAtomic(node.getData()));
@@ -86,7 +86,7 @@ public class NFACompiler {
         }
     }
 
-    private void compileOperator(Node node) {
+    private void compileOperator(AST node) {
         switch (node.getData()) {
             case '|' -> {
                 compile(node.getLeft());

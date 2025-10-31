@@ -1,25 +1,27 @@
-package com.maxgcoding.regex.compile.parse;
+package com.maxgcoding.regex.compile.parse.ast;
 
-public class LazyOperatorNode extends Node {
-    private Node left;
-    private Node right;
+import com.maxgcoding.regex.compile.parse.AST;
+
+public class LazyOperatorNode extends AST {
+    private AST left;
+    private AST right;
     private Character data;
     @Override
-    public Node getLeft() {
+    public AST getLeft() {
         return left;
     }
 
     @Override
-    public Node getRight() {
+    public AST getRight() {
         return right;
     }
     @Override
-    public Node setLeft(Node l) {
+    public AST setLeft(AST l) {
         left = l;
         return this;
     }
     @Override
-    public Node setRight(Node r) {
+    public AST setRight(AST r) {
         right = r;
         return this;
     }
@@ -28,7 +30,7 @@ public class LazyOperatorNode extends Node {
         return data;
     }
     @Override
-    public Node setData(Character ch) {
+    public AST setData(Character ch) {
         this.data = ch;
         return this;
     }

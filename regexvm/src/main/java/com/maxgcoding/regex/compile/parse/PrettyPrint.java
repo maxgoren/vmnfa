@@ -1,7 +1,7 @@
 package com.maxgcoding.regex.compile.parse;
 
-public class Traversal {
-    private static void traverse(Node node, int depth) {
+public class PrettyPrint {
+    private static void traverse(AST node, int depth) {
         if (node != null) {
             indent(depth);
             System.out.println(node.getData());
@@ -12,7 +12,7 @@ public class Traversal {
     private static void indent(int depth) {
         for (int i = 0; i < depth; i++) System.out.print(" ");
     }
-    public static void traverse(Node node) {
+    public static void traverse(AST node) {
         traverse(node, 1);
     }
 }

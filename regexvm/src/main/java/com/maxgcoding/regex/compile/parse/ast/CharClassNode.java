@@ -1,30 +1,32 @@
-package com.maxgcoding.regex.compile.parse;
+package com.maxgcoding.regex.compile.parse.ast;
+
+import com.maxgcoding.regex.compile.parse.AST;
 
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @Accessors(chain = true)
 @NoArgsConstructor
-public class CharClassNode extends Node {
-    private Node left;
-    private Node right;
+public class CharClassNode extends AST {
+    private AST left;
+    private AST right;
     private String ccl;
     @Override
-    public Node getLeft() {
+    public AST getLeft() {
         return left;
     }
 
     @Override
-    public Node getRight() {
+    public AST getRight() {
         return right;
     }
     @Override
-    public Node setLeft(Node l) {
+    public AST setLeft(AST l) {
         left = l;
         return this;
     }
     @Override
-    public Node setRight(Node r) {
+    public AST setRight(AST r) {
         right = r;
         return this;
     }
@@ -34,7 +36,7 @@ public class CharClassNode extends Node {
         return '[';
     }
 
-    public Node setCcl(String data) {
+    public AST setCcl(String data) {
         ccl = data;
         return this;
     }
@@ -43,7 +45,7 @@ public class CharClassNode extends Node {
     }
 
     @Override
-    public Node setData(Character ch) {
+    public AST setData(Character ch) {
         return this;
     }
 
