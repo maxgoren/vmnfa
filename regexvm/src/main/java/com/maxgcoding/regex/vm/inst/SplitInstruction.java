@@ -1,0 +1,45 @@
+package com.maxgcoding.regex.vm.inst;
+
+import com.maxgcoding.regex.vm.Instruction;
+
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+
+@NoArgsConstructor
+@Accessors(chain=true)
+public class SplitInstruction extends Instruction {
+    private Integer next;
+    private Integer alternate;
+    
+    @Override
+    public Integer getNext() {
+        return next;
+    }
+    
+    @Override
+    public Integer getAlternate() {
+        return alternate;
+    }
+
+    @Override
+    public Instruction setNext(Integer i) {
+        next = i;
+        return this;
+    }
+
+    @Override
+    public Instruction setAlternate(Integer i) {
+        alternate = i;
+        return this;
+    }
+
+    @Override
+    public Boolean canMatch(Character ch) {
+        return true;
+    }
+
+    @Override
+    public String toString() {
+         return "[ SPLIT    " + next + " " + (alternate == null ? "-":alternate) + " ]";
+    }
+}

@@ -6,10 +6,10 @@ import com.maxgcoding.regex.compile.parse.Node;
 import com.maxgcoding.regex.compile.parse.Parser;
 import com.maxgcoding.regex.compile.parse.Traversal;
 import com.maxgcoding.regex.digraph.NFA;
-import com.maxgcoding.regex.pm.NFAType;
+import com.maxgcoding.regex.digraph.PowerSet;
+import com.maxgcoding.regex.pm.EngineType;
 import com.maxgcoding.regex.pm.PatternMatcher;
-import com.maxgcoding.regex.pm.PowerSet;
-import com.maxgcoding.regex.pm.vm.VirtualMachine;
+import com.maxgcoding.regex.vm.VirtualMachine;
 
 public class Match {
     
@@ -17,14 +17,14 @@ public class Match {
     
     }
 
-    public static PatternMatcher patternMatcherFactory(String pattern, NFAType type) {
+    public static PatternMatcher patternMatcherFactory(String pattern, EngineType type) {
         Parser parser = new Parser();
         Node ast = parser.parse(pattern);
-        return type.equals(NFAType.DIGRAPH) ? new PowerSet(new NFACompiler().build(ast)):new VirtualMachine(new ByteCodeCompiler().compile(ast));
+        return type.equals(EngineType.DIGRAPH) ? new PowerSet(new NFACompiler().build(ast)):new VirtualMachine(new ByteCodeCompiler().compile(ast));
     }
 
-    public static boolean match(String text, String pattern, NFAType type) {
-        if (type == null || type.equals(NFAType.VIRTUAL_MACHINE))
+    public static boolean match(String text, String pattern, EngineType type) {
+        if (type == null || type.equals(EngineType.VIRTUAL_MACHINE))
             return matchVM(text, pattern);
         return matchPowerSet(text, pattern);
     }

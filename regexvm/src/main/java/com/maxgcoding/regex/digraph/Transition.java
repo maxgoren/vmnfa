@@ -6,7 +6,7 @@ import lombok.Data;
 public class Transition {
     private Character edgeLabel;
     private String ccl;
-    private boolean isCcl;
+    private Boolean isCcl;
     private Boolean isEpsilon;
     private NFAState destination;
     public Transition(Character label, NFAState dest) {
@@ -50,7 +50,16 @@ public class Transition {
         return false;
     }
 
-    private boolean matchCharClass(Character c) {
+    private boolean matchCharClass(Character ch) {
+        char[] raw = ccl.toCharArray();
+        for (int i = 0; i < raw.length; i++) {
+            Character c = raw[i];
+            if (i+2 < raw.length && raw[i+1] == '-') {
+                return ch.compareTo(c) >= 0 && ch.compareTo(raw[i+2]) <= 0;
+            } else if (c.equals(ch)) {
+                return true;
+            }
+        }
         return false;
     }
 }

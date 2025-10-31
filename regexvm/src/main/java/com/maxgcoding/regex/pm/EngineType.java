@@ -1,5 +1,5 @@
 package com.maxgcoding.regex.pm;
 
-public enum NFAType {
+public enum EngineType {
     DIGRAPH, VIRTUAL_MACHINE
 }

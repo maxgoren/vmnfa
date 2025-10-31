@@ -1,8 +1,17 @@
 package com.maxgcoding.regex.compile;
 
+import com.maxgcoding.regex.compile.parse.CharClassNode;
+import com.maxgcoding.regex.compile.parse.LazyOperatorNode;
+import com.maxgcoding.regex.compile.parse.LiteralNode;
 import com.maxgcoding.regex.compile.parse.Node;
-import com.maxgcoding.regex.pm.vm.InstType;
-import com.maxgcoding.regex.pm.vm.Instruction;
+import com.maxgcoding.regex.compile.parse.OperatorNode;
+import com.maxgcoding.regex.vm.Instruction;
+import com.maxgcoding.regex.vm.inst.AnyInstruction;
+import com.maxgcoding.regex.vm.inst.CharClassInstruction;
+import com.maxgcoding.regex.vm.inst.CharInstruction;
+import com.maxgcoding.regex.vm.inst.JumpInstruction;
+import com.maxgcoding.regex.vm.inst.MatchInstruction;
+import com.maxgcoding.regex.vm.inst.SplitInstruction;
 
 public class ByteCodeCompiler {
 
@@ -13,7 +22,7 @@ public class ByteCodeCompiler {
     public Instruction[] compile(Node node) {
         init(node.getLeft());
         build(node.getLeft());
-        emit(new Instruction().setInst(InstType.MATCH).setCclOperand(node.getCcl()));
+        emit(new MatchInstruction().setOperand(((CharClassNode)node).getCcl()));
         return code;
     }
     private void init(Node node) {
@@ -23,20 +32,27 @@ public class ByteCodeCompiler {
         ip = 0;
     }
 
-    private int countInstructions(Node node) {
-        if (node == null)
+    private int countInstructions(Node curr) {
+        if (curr == null)
             return 0;
         int numEmits = 0;
-        switch (node.getType()) {
-            case CCL, LITERAL -> numEmits = 1;
-            case OPERATOR, LAZY_OPERATOR -> {
-                switch (node.getData()) {
-                    case '@' -> numEmits = countInstructions(node.getLeft()) + countInstructions(node.getRight());
-                    case '|', '*' -> numEmits = 2 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
-                    case '+', '?' -> numEmits = 1 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
-                    default -> { }
-                }
-            }
+        switch (curr) {
+            case CharClassNode _ -> numEmits = 1; 
+            case LiteralNode _ -> numEmits = 1;
+            case OperatorNode node -> { numEmits = countEmits(node); }
+            case LazyOperatorNode node -> { numEmits = countEmits(node); }
+            default -> { }
+        }
+        return numEmits;
+    }
+
+    private int countEmits(Node node) {
+        int numEmits = 0;
+        switch (node.getData()) {
+            case '@' -> numEmits = countInstructions(node.getLeft()) + countInstructions(node.getRight());
+            case '|', '*' -> numEmits = 2 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
+            case '+', '?' -> numEmits = 1 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
+            default -> { }
         }
         return numEmits;
     }
@@ -54,12 +70,13 @@ public class ByteCodeCompiler {
             default -> { }
         }
     }
-    private void build(Node node) {
-        switch (node.getType()) {
-            case OPERATOR -> handleOperators(node, Boolean.FALSE);
-            case LAZY_OPERATOR -> handleOperators(node, Boolean.TRUE);
-            case LITERAL ->  handleLiteral(node);
-            case CCL -> handleCCL(node);
+    private void build(Node curr) {
+        switch (curr) {
+            case OperatorNode node -> handleOperators(node, Boolean.FALSE);
+            case LazyOperatorNode node -> handleOperators(node, Boolean.TRUE);
+            case LiteralNode node ->  handleLiteral(node);
+            case CharClassNode node -> handleCCL(node);
+            default -> { }
         }
     }
 
@@ -88,12 +105,11 @@ public class ByteCodeCompiler {
         build(node.getRight());
         int npos = skipEmit(0);
         skipTo(L2);
-        emit(new Instruction().setInst(InstType.JMP).setNext(npos));
+        emit(new JumpInstruction().setNext(npos));
         skipTo(npos);
         int L3 = skipEmit(0);
         skipTo(spos);
-        Instruction ni = new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(L2+1);
-        emit(ni);
+        emit(new SplitInstruction().setNext(L1).setAlternate(L3));
         skipTo(L3); 
     }
 
@@ -105,12 +121,12 @@ public class ByteCodeCompiler {
         int L2 = skipEmit(0);
         skipTo(spos);
         if (makeLazy) {
-            emit(new Instruction().setInst(InstType.SPLIT).setNext(L2+1).setAlternate(L1));
+            emit(new SplitInstruction().setNext(L2+1).setAlternate(L1));
         } else {
-            emit(new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(L2+1));
+            emit(new SplitInstruction().setNext(L1).setAlternate(L2+1));
         }
         skipTo(L2);
-        emit(new Instruction().setInst(InstType.JMP).setNext(spos));
+        emit(new JumpInstruction().setNext(spos));
     }
 
     private void handleZeroOrOnce(Node node, Boolean makeLazy) {
@@ -120,9 +136,9 @@ public class ByteCodeCompiler {
         int L1 = skipEmit(0);
         skipTo(spos);
         if (makeLazy) {
-            emit(new Instruction().setInst(InstType.SPLIT).setNext(L1).setAlternate(spos+1));
+            emit(new SplitInstruction().setNext(L1).setAlternate(spos+1));
         } else {
-            emit(new Instruction().setInst(InstType.SPLIT).setNext(spos+1).setAlternate(L1));
+            emit(new SplitInstruction().setNext(spos+1).setAlternate(L1));
         }
         skipTo(L1);
     }
@@ -132,18 +148,22 @@ public class ByteCodeCompiler {
         build(node.getLeft());
         int L1 = skipEmit(0);
         if (makeLazy) {
-            emit(new Instruction().setInst(InstType.SPLIT).setNext(L1+1).setAlternate(spos));
+            emit(new SplitInstruction().setNext(L1+1).setAlternate(spos));
         } else {
-            emit(new Instruction().setInst(InstType.SPLIT).setNext(spos).setAlternate(L1+1));
+            emit(new SplitInstruction().setNext(spos).setAlternate(L1+1));
         }
     }
 
     private void handleLiteral(Node node) {
-        emit(new Instruction().setInst(InstType.CHAR).setOperand(node.getData()).setNext(ip+1));
+        if (node.getData().equals('.')) {
+            emit(new AnyInstruction().setNext(ip+1));
+        } else {
+            emit(new CharInstruction().setOperand(node.getData()).setNext(ip+1));
+        }
     }
 
     private void handleCCL(Node node) {
-        emit(new Instruction().setInst(InstType.CCL).setCclOperand(node.getCcl()).setNext(ip+1));
+        emit(new CharClassInstruction().setOperand(((CharClassNode)node).getCcl()).setNext(ip+1));
     }
 
     private void grow(int newSize) {

@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 import com.maxgcoding.regex.compile.ByteCodeCompiler;
 import com.maxgcoding.regex.compile.parse.Parser;
-import com.maxgcoding.regex.pm.vm.VirtualMachine;
+import com.maxgcoding.regex.vm.VirtualMachine;
 
 public final class App {
     private App() {

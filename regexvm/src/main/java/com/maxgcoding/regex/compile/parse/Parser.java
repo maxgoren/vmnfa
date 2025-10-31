@@ -12,12 +12,10 @@ public class Parser {
         this.current = rexpr;
         this.spos = 0;
         Node t = expr();
-        Node head = new Node();
-        head.setCcl(rexpr);
-        head.setLeft(t);
-        return head;
+        return new CharClassNode().setCcl(rexpr).setLeft(t);
     }
     
+
     private boolean match(char c) {
         if (expect(c)) {
             System.out.println("Matched " + c);
@@ -73,8 +71,8 @@ public class Parser {
         } else if (isEscapeChar(lookahead())) {
             if (isPerlEscape(lookahead())) {
                 switch (lookahead()) {
-                    case 'D' -> { lhs = new Node().setType(NodeType.CCL).setCcl("[0-9]"); }
-                    case 'd' -> { lhs = new Node().setType(NodeType.CCL).setCcl("[A-Za-z]"); }
+                    case 'D' -> { lhs = new CharClassNode().setCcl("[0-9]"); }
+                    case 'd' -> { lhs = new CharClassNode().setCcl("[A-Za-z]"); }
                     case 'S' -> { }
                     case 's' -> { }
                     case 'w' -> { }
@@ -82,14 +80,11 @@ public class Parser {
                 }
             } else {
                 advance();
-                lhs = new Node();
-                lhs.setType(NodeType.LITERAL);
+                lhs = new LiteralNode();
                 lhs.setData(lookahead());
             }
         } else if (isValLiteral(lookahead())) {
             if (expect('[')) {
-                lhs = new Node();
-                lhs.setType(NodeType.CCL);
                 match('[');
                 StringBuilder data = new StringBuilder();
                 while (!expect(']')) {
@@ -97,25 +92,24 @@ public class Parser {
                     match(lookahead());
                 }
                 match(']');
-                lhs.setCcl(data.toString());
+                lhs = new CharClassNode().setCcl(data.toString());
             } else {
-                lhs = new Node();
-                lhs.setType(NodeType.LITERAL);
+                lhs = new LiteralNode();
                 lhs.setData(lookahead());
                 System.out.println("Matched Literal: " + lookahead());
                 advance();
             }
         }
         if (expect('*') || expect('+') || expect('?')) {
-            Node n = new Node();
-            n.setData(lookahead());
-            match(lookahead());
+            Node n;
             if (expect('?')) {
-                n.setType(NodeType.LAZY_OPERATOR);
+                n = new LazyOperatorNode();
                 match('?');
             } else {
-                n.setType(NodeType.OPERATOR);
-             }
+                n = new OperatorNode();
+            }
+            n.setData(lookahead());
+            match(lookahead());
             n.setLeft(lhs);
             lhs = n;
         }
@@ -124,8 +118,7 @@ public class Parser {
     private Node term() {
         Node lhs = factor();
         if (expect('(') || isValLiteral(lookahead()) || isEscapeChar(lookahead())) {
-            Node t = new Node();
-            t.setType(NodeType.OPERATOR);
+            Node t = new OperatorNode();
             t.setData('@'); 
             t.setLeft(lhs);
             System.out.println("Making Concat");
@@ -138,8 +131,7 @@ public class Parser {
         Node lhs = term();
         if (expect('|')) {
             match('|');
-            Node t = new Node();
-            t.setType(NodeType.OPERATOR);
+            Node t = new OperatorNode();
             t.setData('|');
             t.setLeft(lhs);
             t.setRight(expr());

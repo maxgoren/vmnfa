@@ -1,12 +1,10 @@
-package com.maxgcoding.regex.pm;
+package com.maxgcoding.regex.digraph;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
-import com.maxgcoding.regex.digraph.NFA;
-import com.maxgcoding.regex.digraph.NFAState;
-import com.maxgcoding.regex.digraph.Transition; 
+import com.maxgcoding.regex.pm.PatternMatcher; 
 
 public class PowerSet implements PatternMatcher {
     private int matchFrom;
