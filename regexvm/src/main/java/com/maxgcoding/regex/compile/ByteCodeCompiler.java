@@ -1,7 +1,6 @@
 package com.maxgcoding.regex.compile;
 
 import com.maxgcoding.regex.compile.parse.Node;
-import com.maxgcoding.regex.compile.parse.NodeType;
 import com.maxgcoding.regex.pm.vm.InstType;
 import com.maxgcoding.regex.pm.vm.Instruction;
 
@@ -12,13 +11,13 @@ public class ByteCodeCompiler {
     private int MAX_CODE;
     
     public Instruction[] compile(Node node) {
-        init(node);
-        build(node);
-        emit(new Instruction().setInst(InstType.MATCH));
+        init(node.getLeft());
+        build(node.getLeft());
+        emit(new Instruction().setInst(InstType.MATCH).setCclOperand(node.getCcl()));
         return code;
     }
     private void init(Node node) {
-        MAX_CODE = countInstructions(node);
+        MAX_CODE = countInstructions(node) + 1;
         System.out.println("Resrving space for " + MAX_CODE + " instructions");
         code = new Instruction[MAX_CODE];
         ip = 0;
@@ -27,9 +26,19 @@ public class ByteCodeCompiler {
     private int countInstructions(Node node) {
         if (node == null)
             return 0;
-        if (node.getType().equals(NodeType.LITERAL))
-            return 1;
-        return 1 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
+        int numEmits = 0;
+        switch (node.getType()) {
+            case CCL, LITERAL -> numEmits = 1;
+            case OPERATOR, LAZY_OPERATOR -> {
+                switch (node.getData()) {
+                    case '@' -> numEmits = countInstructions(node.getLeft()) + countInstructions(node.getRight());
+                    case '|', '*' -> numEmits = 2 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
+                    case '+', '?' -> numEmits = 1 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
+                    default -> { }
+                }
+            }
+        }
+        return numEmits;
     }
 
     private void handleOperators(Node node, Boolean makeLazy) {

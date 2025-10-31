@@ -21,7 +21,7 @@ class AppTest {
         example(NFAType.VIRTUAL_MACHINE, "(a*?b|a+?c)d", List.of("aaaabd", "abd", "aaaacd", "acd", "bd","cd"));
         example(NFAType.VIRTUAL_MACHINE, "ab?c", List.of("abc", "ac", "abbc"));
         example(NFAType.VIRTUAL_MACHINE, "(r[aeiou]n.)", List.of("run", "ran", "ring", "render"));
-        //List.of("ab", "aab", "abab", "aaaaaaaaaaabbbbbbbbbb", "abbbbb").forEach(str -> { if (Match.patternMatcherFactory("a+b+", NFAType.VIRTUAL_MACHINE).match(str)) { System.out.println("Match Found for %s :)".formatted(str)); } } );
+        List.of("ab", "aab", "abab", "aaaaaaaaaaabbbbbbbbbb", "abbbbb").forEach(str -> { if (Match.patternMatcherFactory("a+b+", NFAType.VIRTUAL_MACHINE).match(str)) { System.out.println("Match Found for %s :)".formatted(str)); } } );
     }
 
 

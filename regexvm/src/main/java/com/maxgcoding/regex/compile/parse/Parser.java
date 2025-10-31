@@ -12,7 +12,10 @@ public class Parser {
         this.current = rexpr;
         this.spos = 0;
         Node t = expr();
-        return t;
+        Node head = new Node();
+        head.setCcl(rexpr);
+        head.setLeft(t);
+        return head;
     }
     
     private boolean match(char c) {

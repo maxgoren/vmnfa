@@ -21,7 +21,7 @@ public class NFACompiler {
     }
 
     public NFA build(Node node) {
-        compile(node);
+        compile(node.getLeft());
         return st.pop();
     }
 

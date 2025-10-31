@@ -1,5 +1,7 @@
 package com.maxgcoding.regex.pm.vm;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Stack;
 
 import com.maxgcoding.regex.pm.PatternMatcher;
@@ -10,9 +12,9 @@ import lombok.Data;
 public class VirtualMachine implements PatternMatcher {
     
     private final Instruction[] code;
-    
+    private String pattern;
     private String toMatch;
-
+    
     @Data
     @AllArgsConstructor
     private class VMThread {
@@ -22,13 +24,55 @@ public class VirtualMachine implements PatternMatcher {
     
     public VirtualMachine(Instruction[] c) {
         this.code = c;
+        for (int i = c.length-1; i >= 0; i--) {
+            if (c[i] != null && c[i].getInst().equals(InstType.MATCH)) {
+                this.pattern = c[i].getCclOperand();
+                break;
+            }
+        }
         dump();
     }
     
     @Override
     public boolean match(String text) {
         this.toMatch = text;
-        return iterativeBT();
+        return matchThompson();
+    }
+
+    public boolean matchThompson() {
+        Queue<VMThread> threads = new LinkedList<>();
+        Queue<VMThread> alt = new LinkedList<>();
+        threads.add(new VMThread(0, 0));
+        for (int i = 0; ; i++) {
+            while (!threads.isEmpty()) {
+                VMThread thread = threads.poll();
+                Instruction inst = fetch(thread.getInst());
+                switch (inst.getInst()) {
+                    case CCL,CHAR -> {
+                        if (i < toMatch.length()) {
+                            if (!inst.match(toMatch.charAt(i)))
+                                break;
+                            alt.add(new VMThread(inst.getNext(), i));
+                        }
+                        break;
+                    }
+                    case JMP -> {
+                        threads.add(new VMThread(inst.getNext(), i));
+                    }
+                    case SPLIT -> { 
+                        threads.add(new VMThread(inst.getNext(), i)); 
+                        threads.add(new VMThread(inst.getAlternate(), i));
+                    }
+                    case MATCH -> { return true; }
+                    case HALT -> { return false; }
+                }
+            }
+            System.out.println("------------------------");
+            threads.addAll(alt);
+            alt.clear();
+            if (i > toMatch.length())
+                return false;
+        }
     }
 
     public boolean iterativeBT() {
@@ -57,7 +101,7 @@ public class VirtualMachine implements PatternMatcher {
             try {
                 inst = fetch(ipos);
             } catch (Exception e) {
-                System.out.println("Out of threads.");
+                System.out.println("Out of instructions.");
                 return false;
             }
             switch (inst.getInst()) {
@@ -87,7 +131,7 @@ public class VirtualMachine implements PatternMatcher {
     }
 
     public final void dump() {
-        System.out.println("Loaded program: ");
+        System.out.println("Loaded program for pattern: " + pattern);
         printProgram(code);
         System.err.println("-------------------");
     }

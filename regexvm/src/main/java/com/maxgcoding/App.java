@@ -27,6 +27,8 @@ public final class App {
             while (true) {
                 System.out.print("RegExSh> ");
                 input = inScan.nextLine();
+                if (input.equals("quit") || input.equals("exit"))
+                    return;
                 if (vm.match(input)) {
                     System.out.println("Match!");
                 } else {
