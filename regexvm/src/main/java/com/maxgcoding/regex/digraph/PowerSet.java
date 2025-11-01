@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
+import com.maxgcoding.regex.digraph.transitions.CharClassTransition;
+import com.maxgcoding.regex.digraph.transitions.CharacterTransition;
+import com.maxgcoding.regex.digraph.transitions.EpsilonTransition;
 import com.maxgcoding.regex.pm.PatternMatcher; 
 
 public class PowerSet implements PatternMatcher {
@@ -39,11 +42,18 @@ public class PowerSet implements PatternMatcher {
         states.forEach(state -> {next.add(state); st.add(state); });
         while (!st.isEmpty()) {
             NFAState currState = st.pop();
-            for (Transition t : currState.getTrans()) {
-                if (t.getIsEpsilon() && !next.contains(t.getDestination())) {
-                    System.out.println(currState.getLabel() + "-(" + t.getEdgeLabel() + ")-> " + t.getDestination().getLabel());
-                    st.push(t.getDestination());
-                    next.add(t.getDestination());
+            for (Transition trans : currState.getTrans()) {
+                switch (trans) {
+                    case EpsilonTransition ct -> { 
+                        if (!next.contains(ct.getDestination())) {
+                            System.out.println(currState.getLabel() + "-(" + ct.edgeLabel() + ")-> " + ct.getDestination().getLabel());
+                            next.add(ct.getDestination());
+                            st.push(ct.getDestination());
+                        } 
+                    }
+                    case CharacterTransition _ -> { } 
+                    case CharClassTransition _ -> { }
+                    default -> { }
                 }
             }
         }
@@ -54,10 +64,22 @@ public class PowerSet implements PatternMatcher {
     private Set<NFAState> move(Character c, Set<NFAState> states) {
         Set<NFAState> next = new HashSet<>();
         for (NFAState state : states) {
-            for (Transition t : state.getTrans()) {
-                if (!t.getIsEpsilon() && (t.getCcl() != null ? t.getCcl().contains(String.valueOf(c)):t.getEdgeLabel().equals(c)) && !next.contains(t.getDestination())) {
-                    System.out.println(state.getLabel() + "-(" + t.getEdgeLabel() + ")-> " + t.getDestination().getLabel());
-                    next.add(t.getDestination());
+            for (Transition trans : state.getTrans()) {
+                switch (trans) {
+                    case EpsilonTransition _ -> { }
+                    case CharacterTransition ct -> { 
+                        if (ct.match(c) && !next.contains(ct.getDestination())) {
+                            System.out.println(state.getLabel() + "-(" + ct.edgeLabel() + ")-> " + ct.getDestination().getLabel());
+                            next.add(ct.getDestination());
+                        }
+                     } 
+                    case CharClassTransition ct -> {
+                        if (ct.match(c) && !next.contains(ct.getDestination())) {
+                            System.out.println(state.getLabel() + "-(" + ct.edgeLabel() + ")-> " + ct.getDestination().getLabel());
+                            next.add(ct.getDestination());
+                        }
+                    }
+                    default -> { }
                 }
             }
         }

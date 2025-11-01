@@ -9,7 +9,9 @@ import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
 import com.maxgcoding.regex.compile.parse.ast.OperatorNode;
 import com.maxgcoding.regex.digraph.NFA;
 import com.maxgcoding.regex.digraph.NFAState;
-import com.maxgcoding.regex.digraph.Transition;
+import com.maxgcoding.regex.digraph.transitions.CharClassTransition;
+import com.maxgcoding.regex.digraph.transitions.CharacterTransition;
+import com.maxgcoding.regex.digraph.transitions.EpsilonTransition;
 
 public class NFACompiler {
     
@@ -32,26 +34,26 @@ public class NFACompiler {
     private NFA makeAtomic(Character str) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
-        ns.addTransition(new Transition(str, ts));
+        ns.addTransition(new CharacterTransition(str, ts));
         return new NFA(ns,ts);
     }
 
     private NFA makeCCLAtomic(String str) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
-        ns.addTransition(new Transition(str, ts));
+        ns.addTransition(new CharClassTransition(str, ts));
         return new NFA(ns,ts);
     }
 
     private NFA makeEpsilonAtomic() {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
-        ns.addTransition(new Transition(ts));
+        ns.addTransition(new EpsilonTransition(ts));
         return new NFA(ns,ts);
     }
 
     private NFA makeConcat(NFA lhs, NFA rhs) {
-        lhs.getAccept().addTransition(new Transition(rhs.getStart()));
+        lhs.getAccept().addTransition(new EpsilonTransition(rhs.getStart()));
         lhs.setAccept(rhs.getAccept());
         return lhs;
     }
@@ -59,20 +61,20 @@ public class NFACompiler {
     private NFA makeAlternate(NFA lhs, NFA rhs) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
-        ns.addTransition(new Transition(lhs.getStart()));
-        ns.addTransition(new Transition(rhs.getStart()));
-        lhs.getAccept().addTransition(new Transition(ts));
-        rhs.getAccept().addTransition(new Transition(ts));
+        ns.addTransition(new EpsilonTransition(lhs.getStart()));
+        ns.addTransition(new EpsilonTransition(rhs.getStart()));
+        lhs.getAccept().addTransition(new EpsilonTransition(ts));
+        rhs.getAccept().addTransition(new EpsilonTransition(ts));
         return new NFA(ns, ts);
     }
     private NFA makeKleene(NFA lhs, boolean mustmatch) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
         if (!mustmatch)
-            ns.addTransition(new Transition(ts));
-        ns.addTransition(new Transition(lhs.getStart()));
-        lhs.getAccept().addTransition(new Transition(lhs.getStart()));
-        lhs.getAccept().addTransition(new Transition(ts));
+            ns.addTransition(new EpsilonTransition(ts));
+        ns.addTransition(new EpsilonTransition(lhs.getStart()));
+        lhs.getAccept().addTransition(new EpsilonTransition(lhs.getStart()));
+        lhs.getAccept().addTransition(new EpsilonTransition(ts));
         return new NFA(ns, ts);
     }
     private void compile(AST curr) {
