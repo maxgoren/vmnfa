@@ -16,7 +16,7 @@ import lombok.Data;
 
 public class VirtualMachine implements PatternMatcher {
     
-    private final Instruction[] code;
+    private Program pg;
     private String toMatch;
     
     @Data
@@ -26,8 +26,8 @@ public class VirtualMachine implements PatternMatcher {
         private Integer strPos;
     };
     
-    public VirtualMachine(Instruction[] c) {
-        this.code = c;
+    public VirtualMachine(Program pg) {
+        this.pg = pg;
         dump();
     }
     
@@ -97,9 +97,7 @@ public class VirtualMachine implements PatternMatcher {
     }
 
     private Instruction fetch(int index) {
-        if (index > code.length || code[index] == null)
-            throw new RuntimeException("Illegal instruction");
-        Instruction inst = code[index];
+        Instruction inst = pg.getInstruction(index);
         printInstruction(index, inst);
         return inst;
     }
@@ -108,21 +106,12 @@ public class VirtualMachine implements PatternMatcher {
 
     public final void dump() {
         System.out.println("Loaded program for pattern: ");
-        printProgram(code);
         System.err.println("-------------------");
+        pg.print();
     }
 
     public static void printInstruction(int index, Instruction inst) {
         System.out.println("Instruction " + index + ": " + inst.toString());
-    }
-
-    public static void printProgram(Instruction[] instructions) {
-        for (int i = 0; ; i++) {
-            printInstruction(i, instructions[i]);
-            if (instructions[i] instanceof MatchInstruction) {
-                return;
-            }
-        }
     }
 
 }

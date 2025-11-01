@@ -6,6 +6,7 @@ import com.maxgcoding.regex.compile.parse.ast.LazyOperatorNode;
 import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
 import com.maxgcoding.regex.compile.parse.ast.OperatorNode;
 import com.maxgcoding.regex.vm.Instruction;
+import com.maxgcoding.regex.vm.Program;
 import com.maxgcoding.regex.vm.inst.AnyInstruction;
 import com.maxgcoding.regex.vm.inst.CharClassInstruction;
 import com.maxgcoding.regex.vm.inst.CharInstruction;
@@ -14,22 +15,20 @@ import com.maxgcoding.regex.vm.inst.MatchInstruction;
 import com.maxgcoding.regex.vm.inst.SplitInstruction;
 
 public class ByteCodeCompiler {
-
-    private Instruction[] code;
+    private Program pg;
     private int ip;
     private int MAX_CODE;
     
-    public Instruction[] compile(AST node) {
+    public Program compile(AST node) {
         init(node.getLeft());
         build(node.getLeft());
         emit(new MatchInstruction().setOperand(((CharClassNode)node).getCcl()));
-        return code;
+        return pg;
     }
     private void init(AST node) {
         MAX_CODE = countInstructions(node) + 1;
         System.out.println("Resrving space for " + MAX_CODE + " instructions");
-        code = new Instruction[MAX_CODE];
-        ip = 0;
+        pg = new Program(MAX_CODE);
     }
 
     private int countInstructions(AST curr) {
@@ -81,9 +80,7 @@ public class ByteCodeCompiler {
     }
 
     private void emit(Instruction inst) {
-        if (ip+1 == MAX_CODE)
-            grow(2*MAX_CODE);
-        code[ip++] = inst;
+        pg.addInstruction(inst, ip++);
     }
 
     private int skipEmit(int numplace) {
@@ -103,13 +100,13 @@ public class ByteCodeCompiler {
         int L2 = skipEmit(0);
         skipEmit(1);
         build(node.getRight());
-        int npos = skipEmit(0);
+        int npos = skipEmit(0); 
         skipTo(L2);
         emit(new JumpInstruction().setNext(npos));
         skipTo(npos);
         int L3 = skipEmit(0);
         skipTo(spos);
-        emit(new SplitInstruction().setNext(L1).setAlternate(L3));
+        emit(new SplitInstruction().setNext(L1).setAlternate(L2+1));
         skipTo(L3); 
     }
 
@@ -166,10 +163,4 @@ public class ByteCodeCompiler {
         emit(new CharClassInstruction().setOperand(((CharClassNode)node).getCcl()).setNext(ip+1));
     }
 
-    private void grow(int newSize) {
-        Instruction[] tmp = code;
-        code = new Instruction[newSize];
-        System.arraycopy(tmp, 0, code, 0, MAX_CODE);
-        MAX_CODE = newSize;
-    }
 }
