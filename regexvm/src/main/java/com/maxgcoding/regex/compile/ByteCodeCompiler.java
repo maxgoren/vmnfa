@@ -17,8 +17,7 @@ import com.maxgcoding.regex.vm.inst.SplitInstruction;
 public class ByteCodeCompiler {
     private Program pg;
     private int ip;
-    private int MAX_CODE;
-    
+
     public Program compile(AST node) {
         init(node.getLeft());
         build(node.getLeft());
@@ -27,7 +26,7 @@ public class ByteCodeCompiler {
     }
 
     private void init(AST node) {
-        MAX_CODE = countInstructions(node) + 1;
+        int MAX_CODE = countInstructions(node) + 1;
         System.out.println("Resrving space for " + MAX_CODE + " instructions");
         pg = new Program(MAX_CODE);
     }
@@ -37,7 +36,7 @@ public class ByteCodeCompiler {
             return 0;
         int numEmits = 0;
         switch (curr) {
-            case CharClassNode _ -> numEmits = 1; 
+            case CharClassNode _ -> numEmits = 1;
             case LiteralNode _ -> numEmits = 1;
             case OperatorNode node -> { numEmits = countEmits(node); }
             case LazyOperatorNode node -> { numEmits = countEmits(node); }
@@ -63,7 +62,7 @@ public class ByteCodeCompiler {
             case '*' -> handleKleeneOp(node, makeLazy);
             case '+' -> handleAtLeastOnce(node, makeLazy);
             case '?' -> handleZeroOrOnce(node, makeLazy);
-            case '@' -> { 
+            case '@' -> {
                 build(node.getLeft());
                 build(node.getRight());
             }
@@ -89,7 +88,7 @@ public class ByteCodeCompiler {
         ip += numplace;
         return ip;
     }
-    
+
     private void skipTo(int oldpos) {
         ip = oldpos;
     }
@@ -101,12 +100,12 @@ public class ByteCodeCompiler {
         int jumpPos = skipEmit(0);
         int L2 = skipEmit(1);
         build(node.getRight());
-        int L3 = skipEmit(0); 
+        int L3 = skipEmit(0);
         skipTo(jumpPos);
         emit(new JumpInstruction().setNext(L3));
         skipTo(splitPos);
         emit(new SplitInstruction().setNext(L1).setAlternate(L2));
-        skipTo(L3); 
+        skipTo(L3);
     }
 
     private void handleKleeneOp(AST node, Boolean makeLazy) {

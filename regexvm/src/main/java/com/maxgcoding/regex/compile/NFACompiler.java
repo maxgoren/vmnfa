@@ -12,16 +12,20 @@ import com.maxgcoding.regex.digraph.NFAState;
 import com.maxgcoding.regex.digraph.transitions.CharClassTransition;
 import com.maxgcoding.regex.digraph.transitions.CharacterTransition;
 import com.maxgcoding.regex.digraph.transitions.EpsilonTransition;
-
+/*
+* Implements Thompson's construction on an AST to output a Linked-Digraph based NFA
+* suitable for use with the powerset construction to reduce to a DFA, or simulate as is.
+*
+* */
 public class NFACompiler {
-    
+
     private final Stack<NFA> st;
     private int nextLabel;
 
     private int makeLabel() {
         return nextLabel++;
     }
-    
+
     public NFACompiler() {
         st = new Stack<>();
     }
@@ -57,7 +61,7 @@ public class NFACompiler {
         lhs.setAccept(rhs.getAccept());
         return lhs;
     }
-    
+
     private NFA makeAlternate(NFA lhs, NFA rhs) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
@@ -78,7 +82,7 @@ public class NFACompiler {
         lhs.getAccept().addTransition(new EpsilonTransition(ts));
         return new NFA(ns, ts);
     }
-    
+
     private void compile(AST curr) {
         switch (curr) {
             case null -> { }

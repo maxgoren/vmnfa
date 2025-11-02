@@ -11,9 +11,34 @@ import com.maxgcoding.regex.vm.VirtualMachine;
 
 public final class App {
     private App() {
-    
+
     }
-    
+
+    private void repl() {
+        try (Scanner inScan = new Scanner(System.in)) {
+            String input;
+            System.out.print("Pattern: ");
+            VirtualMachine vm = new VirtualMachine(new ByteCodeCompiler()
+                                                    .compile(new Parser()
+                                                            .parse(inScan.nextLine())));
+            while (true) {
+                System.out.print("RegExSh> ");
+                input = inScan.nextLine();
+                if (input.equals("quit") || input.equals("exit")) {
+                    return;
+                } else if (input.length() > 4 && input.substring(0, 4).equals(".pat")) {
+                    vm = new VirtualMachine(new ByteCodeCompiler().compile(new Parser().parse(input.substring(5))));
+                } else if (vm.match(input)) {
+                    System.out.println("Match!");
+                } else {
+                    System.out.println("No Match :(");
+                }
+            }
+        } catch (Exception ex) {
+
+        }
+    }
+
     public static void main(String[] args) {
         App app = new App();
         //app.demo();
@@ -49,28 +74,5 @@ public final class App {
                 System.out.println("No match :(");
             }
         });
-    }
-
-    private void repl() {
-        try (Scanner inScan = new Scanner(System.in)) {
-            String input;
-            System.out.print("Pattern: ");
-            VirtualMachine vm = new VirtualMachine(new ByteCodeCompiler()
-                                                    .compile(new Parser()
-                                                            .parse(inScan.nextLine())));
-            while (true) {
-                System.out.print("RegExSh> ");
-                input = inScan.nextLine();
-                if (input.equals("quit") || input.equals("exit"))
-                    return;
-                if (vm.match(input)) {
-                    System.out.println("Match!");
-                } else {
-                    System.out.println("No Match :(");
-                }
-            }
-        } catch (Exception ex) {
-
-        }
     }
 }

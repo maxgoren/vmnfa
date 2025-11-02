@@ -7,7 +7,7 @@ import java.util.Stack;
 import com.maxgcoding.regex.digraph.transitions.CharClassTransition;
 import com.maxgcoding.regex.digraph.transitions.CharacterTransition;
 import com.maxgcoding.regex.digraph.transitions.EpsilonTransition;
-import com.maxgcoding.regex.pm.PatternMatcher; 
+import com.maxgcoding.regex.pm.PatternMatcher;
 
 public class PowerSet implements PatternMatcher {
     private int matchFrom;
@@ -28,10 +28,13 @@ public class PowerSet implements PatternMatcher {
         next = e_closure(next);
         for (Character c : text.toCharArray()) {
             next = move(c, next);
-            next = checkMatchAndReset(nfa, text, next);
+            /*next = checkMatchAndReset(nfa, text, next);
             next = e_closure(next);
-            next = checkMatchAndReset(nfa, text, next);
+            next = checkMatchAndReset(nfa, text, next);*/
+            next = e_closure(next);
             cpos++;
+            if (next.contains(nfa.getAccept()))
+                return true;
         }
         return next.contains(nfa.getAccept());
     }
@@ -44,14 +47,14 @@ public class PowerSet implements PatternMatcher {
             NFAState currState = st.pop();
             for (Transition trans : currState.getTrans()) {
                 switch (trans) {
-                    case EpsilonTransition ct -> { 
+                    case EpsilonTransition ct -> {
                         if (!next.contains(ct.getDestination())) {
                             System.out.println(currState.getLabel() + "-(" + ct.edgeLabel() + ")-> " + ct.getDestination().getLabel());
                             next.add(ct.getDestination());
                             st.push(ct.getDestination());
-                        } 
+                        }
                     }
-                    case CharacterTransition _ -> { } 
+                    case CharacterTransition _ -> { }
                     case CharClassTransition _ -> { }
                     default -> { }
                 }
@@ -67,12 +70,12 @@ public class PowerSet implements PatternMatcher {
             for (Transition trans : state.getTrans()) {
                 switch (trans) {
                     case EpsilonTransition _ -> { }
-                    case CharacterTransition ct -> { 
+                    case CharacterTransition ct -> {
                         if (ct.match(c) && !next.contains(ct.getDestination())) {
                             System.out.println(state.getLabel() + "-(" + ct.edgeLabel() + ")-> " + ct.getDestination().getLabel());
                             next.add(ct.getDestination());
                         }
-                     } 
+                     }
                     case CharClassTransition ct -> {
                         if (ct.match(c) && !next.contains(ct.getDestination())) {
                             System.out.println(state.getLabel() + "-(" + ct.edgeLabel() + ")-> " + ct.getDestination().getLabel());

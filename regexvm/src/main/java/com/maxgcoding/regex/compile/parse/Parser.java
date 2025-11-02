@@ -1,5 +1,6 @@
 package com.maxgcoding.regex.compile.parse;
 
+import com.maxgcoding.regex.compile.exception.MismatchedTokenException;
 import com.maxgcoding.regex.compile.parse.ast.CharClassNode;
 import com.maxgcoding.regex.compile.parse.ast.LazyOperatorNode;
 import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
@@ -13,31 +14,35 @@ public class Parser {
     private int spos;
 
     public AST parse(String rexpr) {
-        this.current = rexpr;
-        this.spos = 0;
-        AST t = expr();
+        current = rexpr;
+        spos = 0;
+        AST t;
+        try {
+            t = expr();
+        } catch (Exception e) {
+            System.out.println("Shit: " + e.getMessage());
+            return null;
+        }
         return new CharClassNode().setCcl(rexpr).setLeft(t);
     }
-    
-    private boolean match(char c) {
+
+    private void match(char c) throws MismatchedTokenException {
         if (expect(c)) {
             System.out.println("Matched " + c);
             advance();
-            return true;
+            return;
         }
-        System.out.println("Uh oh, mismatched token: " + lookahead());
-        advance();
-        return false;
+        throw new MismatchedTokenException(String.format("Uh oh, mismatched token at position %s: %s", spos, lookahead()));
     }
-    
+
     private boolean expect(char c) {
         return c == lookahead();
     }
-    
+
     private char lookahead() {
         return spos < current.length() ? current.charAt(spos):Character.MIN_VALUE;
     }
-    
+
     private void advance() {
             spos++;
     }
@@ -64,47 +69,9 @@ public class Parser {
         return c.equals('\\');
     }
 
-    private AST factor() {
-        AST lhs = null;
-        if (expect('(')) {
-            match('(');
-            AST m = expr();
-            lhs = m;
-            match(')');
-        } else if (isEscapeChar(lookahead())) {
-            if (isPerlEscape(lookahead())) {
-                switch (lookahead()) {
-                    case 'D' -> { lhs = new CharClassNode().setCcl("[0-9]"); }
-                    case 'd' -> { lhs = new CharClassNode().setCcl("[A-Za-z]"); }
-                    case 'S' -> { }
-                    case 's' -> { }
-                    case 'w' -> { }
-                    case 'W' -> { }
-                }
-            } else {
-                advance();
-                lhs = new LiteralNode();
-                lhs.setData(lookahead());
-            }
-        } else if (isValLiteral(lookahead())) {
-            if (expect('[')) {
-                match('[');
-                StringBuilder data = new StringBuilder();
-                while (!expect(']')) {
-                    data.append(lookahead());
-                    match(lookahead());
-                }
-                match(']');
-                lhs = new CharClassNode().setCcl(data.toString());
-            } else {
-                lhs = new LiteralNode();
-                lhs.setData(lookahead());
-                System.out.println("Matched Literal: " + lookahead());
-                advance();
-            }
-        }
+    private AST parseClosure(AST lhs) throws MismatchedTokenException {
         if (expect('*') || expect('+') || expect('?')) {
-            Character op = lookahead();
+            char op = lookahead();
             match(op);
             AST n;
             if (expect('?')) {
@@ -120,11 +87,63 @@ public class Parser {
         return lhs;
     }
 
-    private AST term() {
+    private AST parseLiteral() throws MismatchedTokenException {
+        AST lhs = null;
+        if (expect('[')) {
+            match('[');
+            StringBuilder data = new StringBuilder();
+            while (!expect(']')) {
+                data.append(lookahead());
+                match(lookahead());
+            }
+            match(']');
+            lhs = new CharClassNode().setCcl(data.toString());
+        } else {
+            lhs = new LiteralNode();
+            lhs.setData(lookahead());
+            System.out.println("Matched Literal: " + lookahead());
+            advance();
+        }
+        return lhs;
+    }
+
+    private AST parseEscapeChars() {
+        AST lhs = null;
+        if (isPerlEscape(lookahead())) {
+            switch (lookahead()) {
+                case 'D' -> { lhs = new CharClassNode().setCcl("[0-9]"); }
+                case 'd' -> { lhs = new CharClassNode().setCcl("[A-Za-z]"); }
+            }
+        } else {
+            advance();
+            lhs = new LiteralNode();
+            lhs.setData(lookahead());
+        }
+        return lhs;
+    }
+
+    private AST factor() throws MismatchedTokenException {
+        AST lhs = null;
+        if (expect('(')) {
+            match('(');
+            lhs = expr();
+            match(')');
+        } else if (isEscapeChar(lookahead())) {
+            lhs = parseEscapeChars();
+        } else if (isValLiteral(lookahead())) {
+            lhs = parseLiteral();
+        }
+        if (lhs != null) {
+            lhs = parseClosure(lhs);
+        }
+        return lhs;
+    }
+
+    private AST term() throws MismatchedTokenException {
         AST lhs = factor();
         if (expect('(') || isValLiteral(lookahead()) || isEscapeChar(lookahead())) {
             AST t = new OperatorNode();
-            t.setData('@'); 
+            t.setData('@');
             t.setLeft(lhs);
             System.out.println("Making Concat");
             t.setRight(term());
@@ -133,7 +152,7 @@ public class Parser {
         return lhs;
     }
 
-    private AST expr() {
+    private AST expr() throws MismatchedTokenException {
         AST lhs = term();
         if (expect('|')) {
             match('|');

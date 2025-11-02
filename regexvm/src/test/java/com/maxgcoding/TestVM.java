@@ -13,7 +13,7 @@ import com.maxgcoding.regex.pm.PatternMatcher;
 /**
  * Unit test for RegEx VM and Digraph NFA matchers
  */
-class AppTest {
+class TestVM {
     /**
      * test VM
      */
@@ -22,6 +22,16 @@ class AppTest {
         PatternMatcher pm = Match.patternMatcherFactory("a+b+", EngineType.VIRTUAL_MACHINE);
         List.of("ab", "aab", "abab", "aaaaaaaaaaabbbbbbbbbb", "abbbbb").forEach(str -> assertTrue(pm.match(str)));
         List.of("a", "b", "zab").forEach(str -> assertFalse(pm.match(str)));
+    }
+
+    @Test
+    void testEagerOperators() {
+        PatternMatcher pm = Match.patternMatcherFactory("(a*b|a+c)d", EngineType.VIRTUAL_MACHINE);
+        assertTrue(pm.match("aaaabd"));
+        assertTrue(pm.match("abd"));
+        assertTrue(pm.match("aaaaaacd"));
+        assertFalse(pm.match("cd"));
+        assertTrue(pm.match("bd"));
     }
     @Test
     void testLazyOperators() {
@@ -39,8 +49,8 @@ class AppTest {
         assertFalse(pm.match("azc"));
     }
     @Test
-    void testCharClassVowles() {
+    void testCharClassVowels() {
         PatternMatcher pm = Match.patternMatcherFactory("(r[aeiou]n.)", EngineType.VIRTUAL_MACHINE);
         List.of("run", "ran", "ring", "render").forEach(str -> assertTrue(pm.match(str)));
-    }   
+    }
 }
