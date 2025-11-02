@@ -13,7 +13,6 @@ public final class App {
     private App() {
     
     }
-
     
     public static void main(String[] args) {
         App app = new App();
@@ -25,7 +24,6 @@ public final class App {
         vmDemo("(a*b|ac)d", List.of("aaabd", "aaaacd", "abd", "acd", "bd", "cd"));
         digraphDemo("(a*b|ac)d", List.of("aaabd", "aaaacd", "abd", "acd", "bd", "cd"));
     }
-
 
     public void vmDemo(String pattern, List<String> testStrings) {
         VirtualMachine vm = new VirtualMachine(new ByteCodeCompiler()
@@ -75,5 +73,4 @@ public final class App {
 
         }
     }
-
 }

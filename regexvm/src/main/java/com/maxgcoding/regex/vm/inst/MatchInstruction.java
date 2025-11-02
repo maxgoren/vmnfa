@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @NoArgsConstructor
-@Accessors(chain=true)
+@Accessors(chain = true)
 public class MatchInstruction extends Instruction {
     private Integer next;
     private Integer alternate;
@@ -50,7 +50,6 @@ public class MatchInstruction extends Instruction {
 
     @Override
     public String toString() {
-         return "[ MATCH ]";
+        return "[ MATCH ]";
     }
-
 }

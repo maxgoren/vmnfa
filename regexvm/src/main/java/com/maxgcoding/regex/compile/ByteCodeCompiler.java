@@ -25,6 +25,7 @@ public class ByteCodeCompiler {
         emit(new MatchInstruction().setOperand(((CharClassNode)node).getCcl()));
         return pg;
     }
+
     private void init(AST node) {
         MAX_CODE = countInstructions(node) + 1;
         System.out.println("Resrving space for " + MAX_CODE + " instructions");
@@ -69,6 +70,7 @@ public class ByteCodeCompiler {
             default -> { }
         }
     }
+
     private void build(AST curr) {
         switch (curr) {
             case OperatorNode node -> handleOperators(node, Boolean.FALSE);
@@ -93,61 +95,58 @@ public class ByteCodeCompiler {
     }
 
     private void handleOrOperator(AST node) {
-        int spos = skipEmit(0);
-        skipEmit(1);
-        int L1 = skipEmit(0);
+        int splitPos = skipEmit(0);
+        int L1 = skipEmit(1);
         build(node.getLeft());
-        int L2 = skipEmit(0);
-        skipEmit(1);
+        int jumpPos = skipEmit(0);
+        int L2 = skipEmit(1);
         build(node.getRight());
-        int npos = skipEmit(0); 
-        skipTo(L2);
-        emit(new JumpInstruction().setNext(npos));
-        skipTo(npos);
-        int L3 = skipEmit(0);
-        skipTo(spos);
-        emit(new SplitInstruction().setNext(L1).setAlternate(L2+1));
+        int L3 = skipEmit(0); 
+        skipTo(jumpPos);
+        emit(new JumpInstruction().setNext(L3));
+        skipTo(splitPos);
+        emit(new SplitInstruction().setNext(L1).setAlternate(L2));
         skipTo(L3); 
     }
 
     private void handleKleeneOp(AST node, Boolean makeLazy) {
-        int spos = skipEmit(0);
-        skipEmit(1);
         int L1 = skipEmit(0);
+        int L2 = skipEmit(1);
         build(node.getLeft());
-        int L2 = skipEmit(0);
-        skipTo(spos);
+        int jumpPos = skipEmit(0);
+        int L3 = skipEmit(1);
+        skipTo(L1);
         if (makeLazy) {
-            emit(new SplitInstruction().setNext(L2+1).setAlternate(L1));
+            emit(new SplitInstruction().setNext(L3).setAlternate(L2));
         } else {
-            emit(new SplitInstruction().setNext(L1).setAlternate(L2+1));
+            emit(new SplitInstruction().setNext(L2).setAlternate(L3));
         }
-        skipTo(L2);
-        emit(new JumpInstruction().setNext(spos));
+        skipTo(jumpPos);
+        emit(new JumpInstruction().setNext(L1));
     }
 
     private void handleZeroOrOnce(AST node, Boolean makeLazy) {
-        int spos = skipEmit(0);
-        skipEmit(1);
+        int splitPos = skipEmit(0);
+        int L1 = skipEmit(1);
         build(node.getLeft());
-        int L1 = skipEmit(0);
-        skipTo(spos);
+        int L2 = skipEmit(0);
+        skipTo(splitPos);
         if (makeLazy) {
-            emit(new SplitInstruction().setNext(L1).setAlternate(spos+1));
+            emit(new SplitInstruction().setNext(L2).setAlternate(L1));
         } else {
-            emit(new SplitInstruction().setNext(spos+1).setAlternate(L1));
+            emit(new SplitInstruction().setNext(L1).setAlternate(L2));
         }
-        skipTo(L1);
+        skipTo(L2);
     }
 
     private void handleAtLeastOnce(AST node, Boolean makeLazy) {
-        int spos = skipEmit(0);
-        build(node.getLeft());
         int L1 = skipEmit(0);
+        build(node.getLeft());
+        int L3 = skipEmit(0)+1;
         if (makeLazy) {
-            emit(new SplitInstruction().setNext(L1+1).setAlternate(spos));
+            emit(new SplitInstruction().setNext(L3).setAlternate(L1));
         } else {
-            emit(new SplitInstruction().setNext(spos).setAlternate(L1+1));
+            emit(new SplitInstruction().setNext(L1).setAlternate(L3));
         }
     }
 
@@ -162,5 +161,4 @@ public class ByteCodeCompiler {
     private void handleCCL(AST node) {
         emit(new CharClassInstruction().setOperand(((CharClassNode)node).getCcl()).setNext(ip+1));
     }
-
 }

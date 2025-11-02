@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @NoArgsConstructor
-@Accessors(chain=true)
+@Accessors(chain = true)
 public class JumpInstruction extends Instruction {
     private Integer next;
     private Integer alternate;
@@ -40,7 +40,6 @@ public class JumpInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "[ JUMP      " + next + " - ]";
+       return "[ JUMP      " + next + " - ]";
     }
-
 }

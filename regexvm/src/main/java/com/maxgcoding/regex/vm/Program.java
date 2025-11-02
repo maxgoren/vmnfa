@@ -6,6 +6,7 @@ public class Program {
     private Instruction[] code;
     private int n;
     private int MAX_CODE;
+
     public Program(int size) {
         MAX_CODE = size;
         code = new Instruction[size];
@@ -16,8 +17,9 @@ public class Program {
         if (code[ip] != null) {
             throw new RuntimeException("Error: invalid IP provided.");
         }
-        if (n+1 == MAX_CODE)
-            grow(2*MAX_CODE);
+        if (n + 1 == MAX_CODE) {
+            grow(2 * MAX_CODE);
+        }
         code[ip] = inst;
         n++;
     }
@@ -28,6 +30,7 @@ public class Program {
         }
         return code[ip];
     }
+
     private void grow(int newSize) {
         Instruction[] tmp = code;
         code = new Instruction[newSize];

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @NoArgsConstructor
-@Accessors(chain=true)
+@Accessors(chain = true)
 public class SplitInstruction extends Instruction {
     private Integer next;
     private Integer alternate;
@@ -40,6 +40,6 @@ public class SplitInstruction extends Instruction {
 
     @Override
     public String toString() {
-         return "[ SPLIT    " + next + " " + (alternate == null ? "-":alternate) + " ]";
+        return "[ SPLIT    " + next + " " + (alternate == null ? "-" : alternate) + " ]";
     }
 }

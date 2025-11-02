@@ -67,6 +67,7 @@ public class NFACompiler {
         rhs.getAccept().addTransition(new EpsilonTransition(ts));
         return new NFA(ns, ts);
     }
+
     private NFA makeKleene(NFA lhs, boolean mustmatch) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
@@ -77,6 +78,7 @@ public class NFACompiler {
         lhs.getAccept().addTransition(new EpsilonTransition(ts));
         return new NFA(ns, ts);
     }
+    
     private void compile(AST curr) {
         switch (curr) {
             case null -> { }

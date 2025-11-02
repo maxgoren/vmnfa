@@ -59,7 +59,6 @@ public class VirtualMachine implements PatternMatcher {
         }
     }
 
-
     private boolean runThread(Queue<VMThread> threads, Queue<VMThread> alt, int i) {
         while (!threads.isEmpty()) {
             VMThread thread = threads.poll();
@@ -67,15 +66,17 @@ public class VirtualMachine implements PatternMatcher {
             switch (instr) {
                 case CharClassInstruction inst -> {
                     if (i < toMatch.length()) {
-                        if (!inst.canMatch(toMatch.charAt(i)))
+                        if (!inst.canMatch(toMatch.charAt(i))) {
                             break;
+                        }
                         alt.add(new VMThread(inst.getNext(), i));
                     }
                 } 
                 case CharInstruction inst-> {
                     if (i < toMatch.length()) {
-                        if (!inst.canMatch(toMatch.charAt(i)))
+                        if (!inst.canMatch(toMatch.charAt(i))) {
                             break;
+                        }
                         alt.add(new VMThread(inst.getNext(), i));
                     }
                 }
@@ -89,8 +90,12 @@ public class VirtualMachine implements PatternMatcher {
                     threads.add(new VMThread(inst.getNext(), i)); 
                     threads.add(new VMThread(inst.getAlternate(), i));
                 }
-                case MatchInstruction _ -> { return true; }
-                default -> { System.out.println("hmmm..."); }
+                case MatchInstruction _ -> { 
+                    return true; 
+                }
+                default -> { 
+                    System.out.println("hmmm..."); 
+                }
             }
         }
         return false;
@@ -102,8 +107,6 @@ public class VirtualMachine implements PatternMatcher {
         return inst;
     }
 
-   
-
     public final void dump() {
         System.out.println("Loaded program for pattern: ");
         System.err.println("-------------------");
@@ -113,5 +116,4 @@ public class VirtualMachine implements PatternMatcher {
     public static void printInstruction(int index, Instruction inst) {
         System.out.println("Instruction " + index + ": " + inst.toString());
     }
-
 }

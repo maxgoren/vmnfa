@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @NoArgsConstructor
-@Accessors(chain=true)
+@Accessors(chain = true)
 public class CharClassInstruction extends Instruction {
     private Integer next;
     private Integer alternate;
@@ -44,8 +44,8 @@ public class CharClassInstruction extends Instruction {
         char[] raw = operand.toCharArray();
         for (int i = 0; i < raw.length; i++) {
             Character c = raw[i];
-            if (i+2 < raw.length && raw[i+1] == '-') {
-                return ch.compareTo(c) >= 0 && ch.compareTo(raw[i+2]) <= 0;
+            if (i + 2 < raw.length && raw[i + 1] == '-') {
+                return (ch.compareTo(c) >= 0) && (ch.compareTo(raw[i + 2]) <= 0);
             } else if (c.equals(ch)) {
                 return true;
             }
@@ -55,7 +55,6 @@ public class CharClassInstruction extends Instruction {
 
     @Override
     public String toString() {
-         return "[ CCL       [" + operand + "] " + next + " ]";
+        return "[ CCL       [" + operand + "] " + next + " ]";
     }
-
 }

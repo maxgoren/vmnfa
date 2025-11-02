@@ -12,7 +12,6 @@ public class Parser {
     private String current;
     private int spos;
 
-    
     public AST parse(String rexpr) {
         this.current = rexpr;
         this.spos = 0;
@@ -20,7 +19,6 @@ public class Parser {
         return new CharClassNode().setCcl(rexpr).setLeft(t);
     }
     
-
     private boolean match(char c) {
         if (expect(c)) {
             System.out.println("Matched " + c);
@@ -106,6 +104,8 @@ public class Parser {
             }
         }
         if (expect('*') || expect('+') || expect('?')) {
+            Character op = lookahead();
+            match(op);
             AST n;
             if (expect('?')) {
                 n = new LazyOperatorNode();
@@ -113,13 +113,13 @@ public class Parser {
             } else {
                 n = new OperatorNode();
             }
-            n.setData(lookahead());
-            match(lookahead());
+            n.setData(op);
             n.setLeft(lhs);
             lhs = n;
         }
         return lhs;
     }
+
     private AST term() {
         AST lhs = factor();
         if (expect('(') || isValLiteral(lookahead()) || isEscapeChar(lookahead())) {
@@ -132,6 +132,7 @@ public class Parser {
         }
         return lhs;
     }
+
     private AST expr() {
         AST lhs = term();
         if (expect('|')) {

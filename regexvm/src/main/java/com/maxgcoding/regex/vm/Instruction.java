@@ -1,9 +1,9 @@
 package com.maxgcoding.regex.vm;
 
 public abstract class Instruction {
-    abstract public Integer getNext();
-    abstract public Integer getAlternate();
-    abstract public Instruction setNext(Integer i);
-    abstract public Instruction setAlternate(Integer i);
-    abstract public Boolean canMatch(Character ch);
+    public abstract Integer getNext();
+    public abstract Integer getAlternate();
+    public abstract Instruction setNext(Integer i);
+    public abstract Instruction setAlternate(Integer i);
+    public abstract Boolean canMatch(Character ch);
 }
