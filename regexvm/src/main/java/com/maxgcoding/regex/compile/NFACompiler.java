@@ -3,10 +3,7 @@ package com.maxgcoding.regex.compile;
 import java.util.Stack;
 
 import com.maxgcoding.regex.compile.parse.AST;
-import com.maxgcoding.regex.compile.parse.ast.CharClassNode;
-import com.maxgcoding.regex.compile.parse.ast.LazyOperatorNode;
-import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
-import com.maxgcoding.regex.compile.parse.ast.OperatorNode;
+import com.maxgcoding.regex.compile.parse.ast.*;
 import com.maxgcoding.regex.digraph.NFA;
 import com.maxgcoding.regex.digraph.NFAState;
 import com.maxgcoding.regex.digraph.transitions.CharClassTransition;
@@ -72,10 +69,10 @@ public class NFACompiler {
         return new NFA(ns, ts);
     }
 
-    private NFA makeKleene(NFA lhs, boolean mustmatch) {
+    private NFA makeKleene(NFA lhs, boolean mustMatch) {
         NFAState ns = new NFAState(makeLabel());
         NFAState ts = new NFAState(makeLabel());
-        if (!mustmatch)
+        if (!mustMatch)
             ns.addTransition(new EpsilonTransition(ts));
         ns.addTransition(new EpsilonTransition(lhs.getStart()));
         lhs.getAccept().addTransition(new EpsilonTransition(lhs.getStart()));
@@ -89,14 +86,13 @@ public class NFACompiler {
             case LiteralNode node -> st.push(makeAtomic(node.getData()));
             case CharClassNode node -> st.push(makeCCLAtomic(node.getCcl()));
             case OperatorNode node -> compileOperator(node);
-            case LazyOperatorNode node -> compileOperator(node);
             default -> { }
         }
     }
 
-    private void compileOperator(AST node) {
-        switch (node.getData()) {
-            case '|' -> {
+    private void compileOperator(OperatorNode operatorNode) {
+        switch (operatorNode) {
+            case OrNode node -> {
                 compile(node.getLeft());
                 compile(node.getRight());
                 NFA rhs = st.pop();
@@ -104,7 +100,7 @@ public class NFACompiler {
                 st.push(makeAlternate(lhs, rhs));
                 break;
             }
-            case '@' -> {
+            case ConcatNode node -> {
                 compile(node.getLeft());
                 compile(node.getRight());
                 NFA rhs = st.pop();
@@ -112,24 +108,25 @@ public class NFACompiler {
                 st.push(makeConcat(lhs, rhs));
                 break;
             }
-            case '*' -> {
+            case StarClosureNode node -> {
                 compile(node.getLeft());
                 NFA lhs = st.pop();
                 st.push(makeKleene(lhs, false));
                 break;
             }
-            case '+' -> {
+            case PlusClosureNode node -> {
                 compile(node.getLeft());
                 NFA lhs = st.pop();
                 st.push(makeKleene(lhs, true));
                 break;
             }
-            case '?' -> {
+            case QuestClosureNode node -> {
                 compile(node.getLeft());
                 NFA lhs = st.pop();
                 st.push(makeAlternate(lhs, makeEpsilonAtomic()));
                 break;
             }
+            default -> { }
         }
     }
 }

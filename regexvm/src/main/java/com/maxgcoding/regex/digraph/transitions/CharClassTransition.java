@@ -13,11 +13,6 @@ public class CharClassTransition extends Transition {
     }
 
     @Override
-    public void setDestination(NFAState dest) {
-        destination = dest;
-    }
-
-    @Override
     public NFAState getDestination() {
         return destination;
     }

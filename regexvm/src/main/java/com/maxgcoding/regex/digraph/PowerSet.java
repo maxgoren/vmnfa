@@ -19,6 +19,10 @@ public class PowerSet implements PatternMatcher {
         this.nfa = nfa;
     }
 
+    /* this version matches eagerly, returning true upon
+     * finding the first matching transition, more apropos
+     * for use in grep-like searches
+     */
     @Override
     public boolean match(String text) {
         matchFrom = 0;
@@ -27,19 +31,45 @@ public class PowerSet implements PatternMatcher {
         Set<NFAState> next = Set.of(nfa.getStart());
         next = e_closure(next);
         for (Character c : text.toCharArray()) {
+            System.out.println("Current Position: " + c);
             next = move(c, next);
-            /*next = checkMatchAndReset(nfa, text, next);
-            next = e_closure(next);
-            next = checkMatchAndReset(nfa, text, next);*/
             next = e_closure(next);
             cpos++;
-            if (next.contains(nfa.getAccept()))
+            if (next.contains(nfa.getAccept())) {
                 return true;
+            } else if (next.isEmpty()) {
+                return false;
+            }
         }
         return next.contains(nfa.getAccept());
     }
 
+    /*
+    *   This version upon discovering that there are no valid transitions to take
+    *   re-initialize to start over from the current position, and is generally
+    *   _not_ what you are after. It's use case is to disambiguate the longest
+    *   match amongst several possible.
+     */
+    public boolean matchAny(String text) {
+            matchFrom = 0;
+            matchLen = 0;
+            cpos = 0;
+            Set<NFAState> next = Set.of(nfa.getStart());
+            next = e_closure(next);
+            for (Character c : text.toCharArray()) {
+                next = move(c, next);
+                next = checkMatchAndReset(nfa, text, next);
+                next = e_closure(next);
+                next = checkMatchAndReset(nfa, text, next);
+                cpos++;
+                if (next.contains(nfa.getAccept()))
+                    return true;
+            }
+            return next.contains(nfa.getAccept());
+    }
+
     private Set<NFAState> e_closure(Set<NFAState> states) {
+        System.out.println("epsilon closure: ");
         Set<NFAState> next = new HashSet<>();
         Stack<NFAState> st = new Stack<>();
         states.forEach(state -> {next.add(state); st.add(state); });
@@ -60,12 +90,14 @@ public class PowerSet implements PatternMatcher {
                 }
             }
         }
+        System.out.println("=====================");
         return next;
     }
 
 
     private Set<NFAState> move(Character c, Set<NFAState> states) {
         Set<NFAState> next = new HashSet<>();
+        System.out.println("Move on " + c);
         for (NFAState state : states) {
             for (Transition trans : state.getTrans()) {
                 switch (trans) {
@@ -86,6 +118,7 @@ public class PowerSet implements PatternMatcher {
                 }
             }
         }
+        System.out.println("---------------------");
         return next;
     }
 

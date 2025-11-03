@@ -1,10 +1,8 @@
 package com.maxgcoding.regex.compile.parse;
 
+import com.maxgcoding.regex.compile.exception.InvalidOperatorException;
 import com.maxgcoding.regex.compile.exception.MismatchedTokenException;
-import com.maxgcoding.regex.compile.parse.ast.CharClassNode;
-import com.maxgcoding.regex.compile.parse.ast.LazyOperatorNode;
-import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
-import com.maxgcoding.regex.compile.parse.ast.OperatorNode;
+import com.maxgcoding.regex.compile.parse.ast.*;
 
 import lombok.Data;
 
@@ -69,19 +67,30 @@ public class Parser {
         return c.equals('\\');
     }
 
-    private AST parseClosure(AST lhs) throws MismatchedTokenException {
+    private AST parseClosure(AST lhs) throws MismatchedTokenException, InvalidOperatorException {
         if (expect('*') || expect('+') || expect('?')) {
             char op = lookahead();
             match(op);
-            AST n;
+            OperatorNode n = null;
+            Boolean isLazy = Boolean.FALSE;
             if (expect('?')) {
-                n = new LazyOperatorNode();
+                isLazy = Boolean.TRUE;
                 match('?');
-            } else {
-                n = new OperatorNode();
             }
-            n.setData(op);
+            switch (op) {
+               case '*' -> {
+                   n = new StarClosureNode();
+               }
+               case '+' -> {
+                   n = new PlusClosureNode();
+               }
+               case '?' -> {
+                   n = new QuestClosureNode();
+               }
+               default -> throw new InvalidOperatorException("Invalid Operator: %s".formatted(op));
+            }
             n.setLeft(lhs);
+            n.setLazy(isLazy);
             lhs = n;
         }
         return lhs;
@@ -142,8 +151,7 @@ public class Parser {
     private AST term() throws MismatchedTokenException {
         AST lhs = factor();
         if (expect('(') || isValLiteral(lookahead()) || isEscapeChar(lookahead())) {
-            AST t = new OperatorNode();
-            t.setData('@');
+            ConcatNode t = new ConcatNode();
             t.setLeft(lhs);
             System.out.println("Making Concat");
             t.setRight(term());
@@ -156,8 +164,7 @@ public class Parser {
         AST lhs = term();
         if (expect('|')) {
             match('|');
-            AST t = new OperatorNode();
-            t.setData('|');
+            OrNode t = new OrNode();
             t.setLeft(lhs);
             t.setRight(expr());
             lhs = t;

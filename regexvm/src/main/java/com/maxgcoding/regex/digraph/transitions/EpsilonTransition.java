@@ -8,10 +8,6 @@ public class EpsilonTransition extends Transition{
     public EpsilonTransition(NFAState dest) {
         this.destination = dest;
     }
-    @Override
-    public void setDestination(NFAState dest) {
-        destination = dest;
-    }
 
     @Override
     public NFAState getDestination() {

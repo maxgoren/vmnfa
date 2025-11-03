@@ -17,14 +17,10 @@ public class CharacterTransition extends Transition {
     }
 
     @Override
-    public void setDestination(NFAState dest) {
-        destination = dest;
-    }
-
-    @Override
     public NFAState getDestination() {
         return destination;
     }
+
     @Override
     public String edgeLabel() {
         return String.valueOf(edgeLabel);

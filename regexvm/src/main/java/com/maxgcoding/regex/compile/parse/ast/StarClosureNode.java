@@ -2,12 +2,9 @@ package com.maxgcoding.regex.compile.parse.ast;
 
 import com.maxgcoding.regex.compile.parse.AST;
 
-public class OperatorNode extends AST {
-
+public class StarClosureNode extends OperatorNode {
     private AST left;
     private AST right;
-    private Character data;
-    private Boolean lazy;
 
     @Override
     public AST getLeft() {
@@ -33,19 +30,11 @@ public class OperatorNode extends AST {
 
     @Override
     public Character getData() {
-        return data;
+        return '*';
     }
 
     @Override
     public AST setData(Character ch) {
-        this.data = ch;
         return this;
-    }
-    public OperatorNode setLazy(Boolean islazy) {
-        this.lazy = islazy;
-        return this;
-    }
-    public Boolean isLazy() {
-        return lazy;
     }
 }

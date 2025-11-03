@@ -2,11 +2,10 @@ package com.maxgcoding.regex.compile.parse.ast;
 
 import com.maxgcoding.regex.compile.parse.AST;
 
-public class LazyOperatorNode extends AST {
-    
+public class OrNode extends OperatorNode {
     private AST left;
     private AST right;
-    private Character data;
+
 
     @Override
     public AST getLeft() {
@@ -23,21 +22,20 @@ public class LazyOperatorNode extends AST {
         left = l;
         return this;
     }
-    
+
     @Override
     public AST setRight(AST r) {
         right = r;
         return this;
     }
-    
+
     @Override
     public Character getData() {
-        return data;
+        return '|';
     }
-    
+
     @Override
     public AST setData(Character ch) {
-        this.data = ch;
         return this;
     }
 }

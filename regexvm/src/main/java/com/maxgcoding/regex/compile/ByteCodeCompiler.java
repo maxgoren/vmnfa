@@ -1,10 +1,7 @@
 package com.maxgcoding.regex.compile;
 
 import com.maxgcoding.regex.compile.parse.AST;
-import com.maxgcoding.regex.compile.parse.ast.CharClassNode;
-import com.maxgcoding.regex.compile.parse.ast.LazyOperatorNode;
-import com.maxgcoding.regex.compile.parse.ast.LiteralNode;
-import com.maxgcoding.regex.compile.parse.ast.OperatorNode;
+import com.maxgcoding.regex.compile.parse.ast.*;
 import com.maxgcoding.regex.vm.Instruction;
 import com.maxgcoding.regex.vm.Program;
 import com.maxgcoding.regex.vm.inst.AnyInstruction;
@@ -39,7 +36,6 @@ public class ByteCodeCompiler {
             case CharClassNode _ -> numEmits = 1;
             case LiteralNode _ -> numEmits = 1;
             case OperatorNode node -> { numEmits = countEmits(node); }
-            case LazyOperatorNode node -> { numEmits = countEmits(node); }
             default -> { }
         }
         return numEmits;
@@ -56,13 +52,13 @@ public class ByteCodeCompiler {
         return numEmits;
     }
 
-    private void handleOperators(AST node, Boolean makeLazy) {
-        switch (node.getData()) {
-            case '|' -> handleOrOperator(node);
-            case '*' -> handleKleeneOp(node, makeLazy);
-            case '+' -> handleAtLeastOnce(node, makeLazy);
-            case '?' -> handleZeroOrOnce(node, makeLazy);
-            case '@' -> {
+    private void handleOperators(OperatorNode operatorNode) {
+        switch (operatorNode) {
+            case OrNode node -> handleOrOperator(node);
+            case StarClosureNode node -> handleKleeneOp(node);
+            case PlusClosureNode node -> handleAtLeastOnce(node);
+            case QuestClosureNode node -> handleZeroOrOnce(node);
+            case ConcatNode node -> {
                 build(node.getLeft());
                 build(node.getRight());
             }
@@ -72,8 +68,11 @@ public class ByteCodeCompiler {
 
     private void build(AST curr) {
         switch (curr) {
-            case OperatorNode node -> handleOperators(node, Boolean.FALSE);
-            case LazyOperatorNode node -> handleOperators(node, Boolean.TRUE);
+            case ConcatNode node -> handleOperators(node);
+            case OrNode node -> handleOperators(node);
+            case QuestClosureNode node -> handleOperators(node);
+            case PlusClosureNode node -> handleOperators(node);
+            case StarClosureNode node -> handleOperators(node);
             case LiteralNode node ->  handleLiteral(node);
             case CharClassNode node -> handleCCL(node);
             default -> { }
@@ -93,7 +92,7 @@ public class ByteCodeCompiler {
         ip = oldpos;
     }
 
-    private void handleOrOperator(AST node) {
+    private void handleOrOperator(OrNode node) {
         int splitPos = skipEmit(0);
         int L1 = skipEmit(1);
         build(node.getLeft());
@@ -108,14 +107,14 @@ public class ByteCodeCompiler {
         skipTo(L3);
     }
 
-    private void handleKleeneOp(AST node, Boolean makeLazy) {
+    private void handleKleeneOp(StarClosureNode node) {
         int L1 = skipEmit(0);
         int L2 = skipEmit(1);
         build(node.getLeft());
         int jumpPos = skipEmit(0);
         int L3 = skipEmit(1);
         skipTo(L1);
-        if (makeLazy) {
+        if (node.isLazy()) {
             emit(new SplitInstruction().setNext(L3).setAlternate(L2));
         } else {
             emit(new SplitInstruction().setNext(L2).setAlternate(L3));
@@ -124,13 +123,13 @@ public class ByteCodeCompiler {
         emit(new JumpInstruction().setNext(L1));
     }
 
-    private void handleZeroOrOnce(AST node, Boolean makeLazy) {
+    private void handleZeroOrOnce(QuestClosureNode node) {
         int splitPos = skipEmit(0);
         int L1 = skipEmit(1);
         build(node.getLeft());
         int L2 = skipEmit(0);
         skipTo(splitPos);
-        if (makeLazy) {
+        if (node.isLazy()) {
             emit(new SplitInstruction().setNext(L2).setAlternate(L1));
         } else {
             emit(new SplitInstruction().setNext(L1).setAlternate(L2));
@@ -138,11 +137,11 @@ public class ByteCodeCompiler {
         skipTo(L2);
     }
 
-    private void handleAtLeastOnce(AST node, Boolean makeLazy) {
+    private void handleAtLeastOnce(PlusClosureNode node) {
         int L1 = skipEmit(0);
         build(node.getLeft());
         int L3 = skipEmit(0)+1;
-        if (makeLazy) {
+        if (node.isLazy()) {
             emit(new SplitInstruction().setNext(L3).setAlternate(L1));
         } else {
             emit(new SplitInstruction().setNext(L1).setAlternate(L3));
