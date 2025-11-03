@@ -1,5 +1,7 @@
 package com.maxgcoding.regex.compile.parse;
 
+import com.maxgcoding.regex.compile.parse.ast.*;
+
 public class PrettyPrint {
 
     private PrettyPrint() {}
@@ -7,7 +9,12 @@ public class PrettyPrint {
     private static void traverse(AST node, int depth) {
         if (node != null) {
             indent(depth);
-            System.out.println(node.getData());
+            switch (node) {
+                case LiteralNode _ -> System.out.println(node.getData());
+                case CharClassNode ccl -> System.out.printf("[%s]\n", ccl.getCcl());
+                case OrNode _, ConcatNode _, QuestClosureNode _, PlusClosureNode _, StarClosureNode _ -> System.out.println(node.getData());
+                default -> { }
+            }
             traverse(node.getLeft(), depth+1);
             traverse(node.getRight(), depth+1);
         }

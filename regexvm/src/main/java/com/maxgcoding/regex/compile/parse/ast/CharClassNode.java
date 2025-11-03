@@ -8,12 +8,12 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @NoArgsConstructor
 public class CharClassNode extends AST {
-
+    AST node;
     private String ccl;
 
     @Override
     public AST getLeft() {
-        return null;
+        return node;
     }
 
     @Override
@@ -23,6 +23,7 @@ public class CharClassNode extends AST {
 
     @Override
     public AST setLeft(AST l) {
+        this.node = l;
         return this;
     }
 

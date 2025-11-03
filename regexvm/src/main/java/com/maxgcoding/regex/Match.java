@@ -12,14 +12,15 @@ import com.maxgcoding.regex.pm.PatternMatcher;
 import com.maxgcoding.regex.vm.VirtualMachine;
 
 public class Match {
-    
+
     private Match() {
-    
+
     }
 
     public static PatternMatcher patternMatcherFactory(String pattern, EngineType type) {
         Parser parser = new Parser();
         AST ast = parser.parse(pattern);
+        PrettyPrint.traverse(ast);
         return type.equals(EngineType.DIGRAPH) ? new PowerSet(new NFACompiler().build(ast)):new VirtualMachine(new ByteCodeCompiler().compile(ast));
     }
 
@@ -36,7 +37,7 @@ public class Match {
         PrettyPrint.traverse(ast);
         VirtualMachine vm = new VirtualMachine(c.compile(ast));
         return vm.match(text);
-    } 
+    }
 
     public static boolean matchPowerSet(String text, String pattern) {
         Parser p = new Parser();

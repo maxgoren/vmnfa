@@ -41,12 +41,12 @@ public class ByteCodeCompiler {
         return numEmits;
     }
 
-    private int countEmits(AST node) {
+    private int countEmits(OperatorNode opnode) {
         int numEmits = 0;
-        switch (node.getData()) {
-            case '@' -> numEmits = countInstructions(node.getLeft()) + countInstructions(node.getRight());
-            case '|', '*' -> numEmits = 2 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
-            case '+', '?' -> numEmits = 1 + countInstructions(node.getLeft()) + countInstructions(node.getRight());
+        switch (opnode) {
+            case ConcatNode node -> numEmits = countInstructions(node.getLeft()) + countInstructions(node.getRight());
+            case OrNode _, StarClosureNode _ -> numEmits = 2 + countInstructions(opnode.getLeft()) + countInstructions(opnode.getRight());
+            case PlusClosureNode _ , QuestClosureNode _ -> numEmits = 1 + countInstructions(opnode.getLeft()) + countInstructions(opnode.getRight());
             default -> { }
         }
         return numEmits;
